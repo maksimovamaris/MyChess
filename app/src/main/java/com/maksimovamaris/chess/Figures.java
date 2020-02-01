@@ -1,4 +1,4 @@
-package com.example.chess.model;
+package com.maksimovamaris.chess;
 
 public enum Figures {
 

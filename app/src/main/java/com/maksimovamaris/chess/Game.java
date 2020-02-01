@@ -1,13 +1,12 @@
-package com.example.chess.model;
+package com.maksimovamaris.chess;
 
-
-import static com.example.chess.model.Figures.KNIGHT;
-import static com.example.chess.model.Figures.values;
+import static com.maksimovamaris.chess.Figures.values;
 
 public class Game {
 
     private ChessFigure[][] mBoard;
     private ChessFigure[] army;
+    private ChessFigure passant = null;
 
     public void startGame() {
         mBoard = new ChessFigure[8][8];
@@ -15,7 +14,7 @@ public class Game {
             for (int j = 0; j < 8; j++) {
                 mBoard[i][j] = null;
             }
-        createArmy();
+
     }
 
     //помнить что нумерация в матрице происходит от 0 до 7, а не от 1 до 8, как в шахматах!
@@ -72,26 +71,6 @@ public class Game {
 
     }
 
-    private void createArmy() {
-        int index = 0;
-        int row;
-
-//        for ()
-        for (Colors color : Colors.values()) {
-            if (color == Colors.WHITE)
-                row = 0;
-            else
-                row = 6;
-
-            for (int i = row; i < row + 2; i++)
-                for (int j = 0; j < 8; j++) {
-                    army[index] = mBoard[i][j];
-                    army[index].setRow(i);
-                    army[index].setColumn(j);
-                    index++;
-                }
-        }
-    }
 
     private ChessFigure generateNewFigure(Colors color, Figures name) {
         ChessFigure fig = new ChessFigure();
@@ -105,21 +84,28 @@ public class Game {
         boolean flag = false;
         ChessFigure figure = mBoard[row][column];
         ChessFigure move = mBoard[rowTo][columnTo];
-        if(rowTo>0&&columnTo>0&&rowTo<8&&columnTo<8)
-        {
+        if (rowTo > 0 && columnTo > 0 && rowTo < 8 && columnTo < 8) {
             switch (figure.getName()) {
                 case KING:
 
                     break;
                 case QUEEN:
                     flag = ((checkFreeLine(row, column, rowTo, columnTo) || checkFreeDiagonal(row, column, rowTo, columnTo))) && checkMovePoint(row, rowTo, column, columnTo);
+                    if (flag)
+                        passant = null;
                     break;
                 case KNIGHT:
                     flag = ((Math.abs(rowTo - row) == 1 && Math.abs(columnTo - column) == 2) || (Math.abs(rowTo - row) == 2 && Math.abs(columnTo - column) == 1)) &&
                             checkMovePoint(row, rowTo, column, columnTo);
+                    if (flag)
+                        passant = null;
                     break;
                 case ROOK:
                     flag = checkFreeLine(row, rowTo, column, columnTo) && checkMovePoint(row, rowTo, column, columnTo);
+                    if (flag) {
+                        mBoard[row][column].setMoved(true);
+                        passant = null;
+                    }
                     break;
                 case PAWN:
                     //пешки не ходят назад, поэтому рассматриваем только случаи вперед
@@ -129,15 +115,20 @@ public class Game {
 
                         {
                             flag = (!mBoard[row][column].isMoved() && (move == null));//проверяем что пешка не ходила и поле свободно
-                            if (flag)
+                            if (flag) {
                                 mBoard[row][column].setMoved(true);
+                                passant = mBoard[row][column];
+                            }
                             break;
 
                         } else if ((rowTo - row) == 1)//на 1 клетку вперед
                         {
                             flag = (move == null);//проверяем что поле свободно
-                            if (flag)
+                            if (flag) {
                                 mBoard[row][column].setMoved(true);
+                                passant = null;
+                            }
+                            ;
                             break;
                         }
 
@@ -148,8 +139,10 @@ public class Game {
                             if (move != null)//проверяем что едим не пустое поле
                             {
                                 flag = (move.getColor() != figure.getColor());//проверяем что едим не свою фигуру
-                                if (flag)
+                                if (flag) {
                                     mBoard[row][column].setMoved(true);
+                                    passant = null;
+                                }
                                 break;
                             }
                         }
@@ -168,26 +161,24 @@ public class Game {
     }
 
     private boolean checkFreeLine(int row, int column, int rowTo, int columnTo) {
-        boolean flag=false;
-        if (row == rowTo )
-        {
+        boolean flag = false;
+        if (row == rowTo) {
             int i;
-for(i= Math.min(column,columnTo)+1;i<Math.max(column,columnTo)&&mBoard[row][i]==null;i++);
-            if(i==Math.max(column,columnTo))
-                flag=true;
-        }
-        else
-                if(column==columnTo)
-            {
-                int i;
-                for(i= Math.min(row,rowTo)+1;i<Math.max(row,rowTo)&&mBoard[i][column]==null;i++);
-                if(i==Math.max(row,rowTo))
-                    flag=true;
+            for (i = Math.min(column, columnTo) + 1; i < Math.max(column, columnTo) && mBoard[row][i] == null; i++)
+                ;
+            if (i == Math.max(column, columnTo))
+                flag = true;
+        } else if (column == columnTo) {
+            int i;
+            for (i = Math.min(row, rowTo) + 1; i < Math.max(row, rowTo) && mBoard[i][column] == null; i++)
+                ;
+            if (i == Math.max(row, rowTo))
+                flag = true;
 
-            }
+        }
 
         return flag;
-        }
+    }
 
     private boolean checkFreeDiagonal(int row, int column, int rowTo, int columnTo) {
         boolean flag = false;
@@ -206,16 +197,16 @@ for(i= Math.min(column,columnTo)+1;i<Math.max(column,columnTo)&&mBoard[row][i]==
         }
         return flag;
     }
-    private boolean checkMovePoint(int row, int column, int rowTo, int columnTo)
-    {
-        boolean flag;
-            if (mBoard[rowTo][columnTo] == null)
-                flag = true;
-            else
-                flag = mBoard[rowTo][columnTo].getColor() != mBoard[row][column].getColor();
 
-             return flag;
-}
+    private boolean checkMovePoint(int row, int column, int rowTo, int columnTo) {
+        boolean flag;
+        if (mBoard[rowTo][columnTo] == null)
+            flag = true;
+        else
+            flag = mBoard[rowTo][columnTo].getColor() != mBoard[row][column].getColor();
+
+        return flag;
+    }
 }
 
 

@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">MyChess</string>
+    <string name="theme_color_pref_title">Select theme</string>
+    <string name="action_settings">Settings</string>
+
+    <string-array name="board_themes">
+        <item>Warm</item>
+        <item>Cool</item>
+        <item>Mint</item>
+    </string-array>
 </resources>

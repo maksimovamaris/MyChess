@@ -1,4 +1,4 @@
-package com.example.chess;
+package com.maksimovamaris.chess;
 
 import android.content.Context;
 
