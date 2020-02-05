@@ -1,6 +1,7 @@
-package com.maksimovamaris.chess;
+package com.maksimovamaris.chess.figures;
 
-public enum Colors {
+public enum Colors
+{
     WHITE(1),BLACK(-1);
 private int i;
 

@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess;
+package com.maksimovamaris.chess.figures;
 
 public enum Figures {
 
