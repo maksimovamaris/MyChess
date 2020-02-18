@@ -5,18 +5,17 @@ import com.maksimovamaris.chess.game.Cell;
 
 import java.util.List;
 
-public abstract class ChessFigure   {
+public abstract class ChessFigure {
     FigureInfo info;
     Colors color;
     Cell position;
     Figures name;
+
     public ChessFigure(Colors color, Cell c) {
-        info=new FigureInfo();
+        info = new FigureInfo();
         this.position = c;
         this.color = color;
     }
-
-
 
 
 //    public boolean sameColor(Cell c,BoardDirector boardDirector) {
