@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="color_pref_key" translatable="false">color_board</string>
+    <string name="color_def_value">0</string>
+    <string-array name="board_theme_data">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+</resources>

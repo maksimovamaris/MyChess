@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Interface">
+        <ListPreference
+            android:key="@string/color_pref_key"
+            android:title="@string/theme_color_pref_title"
+            android:entries="@array/board_themes"
+            android:entryValues="@array/board_theme_data"
+            android:defaultValue="@string/color_def_value"
+            />
+    </PreferenceCategory>
+</PreferenceScreen>
