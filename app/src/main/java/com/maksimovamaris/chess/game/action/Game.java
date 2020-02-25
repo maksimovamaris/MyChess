@@ -19,13 +19,13 @@ public class Game {
     private Player currentPlayer;
     private BoardDirector boardDirector;
     private BoardView boardView;
-    private Runner runner;
+    private Runner moveAnalyser;
     private Boolean isMate;
     private Cell attack;
 
-    public Game(Runner r) {
+    public Game(Runner analyser) {
         isMate = null;
-        runner = r;
+        moveAnalyser = analyser;
     }
 
     private void createPlayers() {
@@ -108,7 +108,7 @@ public class Game {
      * @param c1 куда ходим
      */
     void checkMove(Cell c0, Cell c1) {
-        runner.runInBackground(() -> {
+        moveAnalyser.runInBackground(() -> {
             ChessFigure savedFigure = null;
             if (checkFigure(c0, c1)) {
                 if (boardDirector.getFigure(c1) != null)
@@ -119,7 +119,7 @@ public class Game {
                     changePlayer();
                     isMate = null;
                     attack = null;
-                    runner.runOnMain(() ->
+                    moveAnalyser.runOnMain(() ->
                             notifyView(null));
                     // поменяли игрока, проверка противника на шах/мат
                     //если король противника попал под шах после хода
@@ -129,7 +129,7 @@ public class Game {
                         //если определен мат
                         if (isMate == true) {
                             try {
-                                runner.runOnMain(() -> Toast.makeText(boardView.getContext(), "Mate!", Toast.LENGTH_SHORT).show());
+                                moveAnalyser.runOnMain(() -> Toast.makeText(boardView.getContext(), "Mate!", Toast.LENGTH_SHORT).show());
                             } catch (NullPointerException e) {
                                 boardView.printMessage("Mate!");
                             }
@@ -137,7 +137,7 @@ public class Game {
                         //иначе только шах
                         else {
                             try {
-                                runner.runOnMain(() -> Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show());
+                                moveAnalyser.runOnMain(() -> Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show());
                             } catch (NullPointerException e) {
                                 boardView.printMessage("Check!");
                             }
@@ -147,7 +147,7 @@ public class Game {
                     else {
                         if (checkDraw())
                             try {
-                                runner.runOnMain(() -> Toast.makeText(boardView.getContext(), "Draw", Toast.LENGTH_SHORT).show());
+                                moveAnalyser.runOnMain(() -> Toast.makeText(boardView.getContext(), "Draw", Toast.LENGTH_SHORT).show());
                             } catch (NullPointerException e) {
                                 boardView.printMessage("Draw");
                             }
@@ -156,7 +156,7 @@ public class Game {
                     //откатываемся обратно, король в опасности
                     updateGame(c1, c0, savedFigure);
                     try {
-                        runner.runOnMain(() ->
+                        moveAnalyser.runOnMain(() ->
                                 Toast.makeText(boardView.getContext(), "Protect your king!", Toast.LENGTH_SHORT).show());
                     } catch (NullPointerException e) {
                         boardView.printMessage("Protect your king!");
@@ -164,7 +164,7 @@ public class Game {
                 }
             } else
                 try {
-                    runner.runOnMain(() ->
+                    moveAnalyser.runOnMain(() ->
                             Toast.makeText(boardView.getContext(), "Incorrect move", Toast.LENGTH_SHORT).show());
                 } catch (NullPointerException e) {
                     boardView.printMessage("Incorrect move");
@@ -368,6 +368,8 @@ public class Game {
         // attack = null; - подумать что с этим делать
     }
 
+
+
     public void attachView(BoardView view) {
         boardView = view;
         view.setGame(this);
@@ -381,5 +383,5 @@ public class Game {
         boardView.updateView(c);
     }
 }
-//еще не реализована рокировка, взятие на проходе
+//еще не реализована рокировка, взятие на проходе, преврашение пешки
 

@@ -17,6 +17,7 @@ public class GameActivity extends AppCompatActivity {
 
     private Game game;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,6 +25,7 @@ public class GameActivity extends AppCompatActivity {
         boardView = findViewById(R.id.board_view);
         game = ((GameHolder) (getApplication())).getGame();
         game.attachView(boardView);
+
 
     }
 

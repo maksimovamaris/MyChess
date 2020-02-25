@@ -20,6 +20,8 @@ import android.view.View;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
+import com.maksimovamaris.chess.data.GamesDataBase;
+import com.maksimovamaris.chess.data.GamesDatabaseHolder;
 import com.maksimovamaris.chess.preferences.PreferencesActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         addGameBut = findViewById(R.id.fab);
