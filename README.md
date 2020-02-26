@@ -1,3 +1,3 @@
 # MyChess
- It's a very simple android App imitating Chess Game
+ It's a simple Android App imitating Chess Game
  
