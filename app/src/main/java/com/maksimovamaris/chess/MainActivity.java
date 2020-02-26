@@ -12,6 +12,7 @@ import androidx.navigation.ui.NavigationUI;
 import android.content.Intent;
 
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,12 +21,10 @@ import android.view.View;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-import com.maksimovamaris.chess.data.GamesDataBase;
-import com.maksimovamaris.chess.data.GamesDatabaseHolder;
 import com.maksimovamaris.chess.preferences.PreferencesActivity;
+import com.maksimovamaris.chess.view.games.GameActivity;
 
 public class MainActivity extends AppCompatActivity {
-    //    private BoardView mBoardView;
     private AppBarConfiguration mAppBarConfiguration;
 
     private FloatingActionButton addGameBut;
@@ -42,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         addGameBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);
                 startActivity(intent);
             }
@@ -57,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .penaltyDialog()
+                .detectCustomSlowCalls()
+                .build());
 
     }
 

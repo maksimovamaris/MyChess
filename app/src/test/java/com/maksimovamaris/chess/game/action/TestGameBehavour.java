@@ -31,22 +31,23 @@ public class TestGameBehavour {
     private BoardDirector director;
     private Cell upperKingPos;
     private Cell lowerKingPos;
+    private Context context;
 
     @Before
     public void prepare() {
+        context=mock(Context.class);
         testGame = new Game(new StubRunner());
         boardView = mock(BoardView.class);
         viewContext = mock(Context.class);
         when(boardView.getContext()).thenReturn(viewContext);
-        testGame.createGame();
+        testGame.createGame(context);
         testGame.attachView(boardView);
         //так как класс Game плотно общается с BoardDirector'ом, без реального экземпляра BoardDirector'а логику Game не протестировать
         board = new Board();
-        director = new BoardDirector();
+        director = new BoardDirector(context);
         upperKingPos = new Cell(0, 7);
         lowerKingPos = new Cell(0, 0);
     }
-
 
     /**
      * тестирует первый ход пешки
@@ -155,7 +156,7 @@ public class TestGameBehavour {
         prepareLineMateState();
         board.field[5][2] = new Queen(Colors.BLACK, new Cell(5, 2));
         director.setBoard(board, new Cell(0, 7), new Cell(0, 0));
-        testGame.restoreGame(director, "Black");
+        testGame.restoreGame(director, "black");
         testGame.viewAction(new Cell(7, 6), new Cell(7, 7));
         verify(boardView).printMessage("Mate!");
     }
@@ -167,7 +168,7 @@ public class TestGameBehavour {
     public void testNoLineMate() {
         prepareLineMateState();
         director.setBoard(board, new Cell(0, 7), new Cell(0, 0));
-        testGame.restoreGame(director, "Black");
+        testGame.restoreGame(director, "black");
         testGame.viewAction(new Cell(7, 6), new Cell(7, 7));
         verify(boardView).printMessage("Check!");
     }
@@ -179,7 +180,6 @@ public class TestGameBehavour {
         //короли
         board.field[0][7] = new King(Colors.BLACK, upperKingPos);
         board.field[0][0] = new King(Colors.WHITE, lowerKingPos);
-
 
         //2 ладьи
         board.field[2][4] = new Rook(Colors.WHITE, new Cell(2, 4));
@@ -201,7 +201,7 @@ public class TestGameBehavour {
     @Test
     public void testRookCheck() {
         prepareRookCheckPosition();
-        prepareGameState(lowerKingPos, upperKingPos, "White");
+        prepareGameState(lowerKingPos, upperKingPos, "white");
         testGame.viewAction(new Cell(2, 4), new Cell(0, 4));
         verify(boardView).printMessage("Check!");
         testGame.viewAction(upperKingPos, new Cell(1, 6));
@@ -224,7 +224,7 @@ public class TestGameBehavour {
     @Test
     public void testBishopCheck() {
         prepareBishopCkeckPosition();
-        prepareGameState(lowerKingPos, upperKingPos, "White");
+        prepareGameState(lowerKingPos, upperKingPos, "white");
         testGame.viewAction(new Cell(2, 3), new Cell(3, 4));
         verify(boardView).updateView(null);
         verify(boardView).printMessage("Check!");
@@ -244,10 +244,9 @@ public class TestGameBehavour {
 
     }
 
-
     public void testDraw() {
 
-        prepareGameState(lowerKingPos, upperKingPos, "Black");
+        prepareGameState(lowerKingPos, upperKingPos, "black");
         testGame.viewAction(upperKingPos, new Cell(1, 7));
         verify(boardView).printMessage("Draw");
     }
@@ -286,7 +285,6 @@ public class TestGameBehavour {
         testDraw();
     }
 
-
     /**
      * подготовка позиции для пата
      * белым некуда ходить, после хода черных объявляется ничья
@@ -311,7 +309,5 @@ public class TestGameBehavour {
     //не протестировано
     //getBoardDirector()
     //detachView()
-    //
-
 
 }

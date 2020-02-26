@@ -33,7 +33,6 @@ public class BoardView extends View {
     private Paint hintPaint = new Paint();
     private int colorDark;
     private int colorLight;
-
     private Cell selection;
     private Game game;
     private FigureInfo info;
@@ -52,7 +51,7 @@ public class BoardView extends View {
 
     public void setGame(Game g) {
         game = g;
-        game.createGame();
+        game.createGame(getContext());
     }
 
     public void setColors(int colorDark, int colorLight) {
@@ -69,7 +68,6 @@ public class BoardView extends View {
         Cell c;
         float cellWidth = canvas.getWidth() / 9;
         String letters = getResources().getString(R.string.letters);
-
         for (int x = 0; x < 9; x++) {
             for (int y = 0; y < 9; y++) {
                 c = new Cell(x, y);
@@ -154,10 +152,12 @@ public class BoardView extends View {
     @Override
     public boolean onTouchEvent(final MotionEvent event) {
         float cellWidth = getWidth() / 9;
-        if (event.getAction() == MotionEvent.ACTION_UP) {
+        if (event.getAction() == MotionEvent.ACTION_UP)
+        {
             int x = (int) (event.getX() / cellWidth) - 1;
             int y = 7 - (int) (event.getY() / cellWidth);
             Cell c = new Cell(x, y);
+
             if (c.isCorrect())//ячейка существует
             {
                 game.viewAction(selection, c);

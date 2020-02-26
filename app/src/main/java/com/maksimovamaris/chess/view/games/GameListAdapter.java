@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess;
+package com.maksimovamaris.chess.view.games;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.GameData;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.GameLi
     @Override
     public void onBindViewHolder(@NonNull GameListViewHolder holder, int position) {
         holder.gameTime.setText(gamesDataset.get(position).getGame_date().toString());
-        holder.gameTitle.setText(gamesDataset.get(position).getTurn()+" turn");
+        holder.gameTitle.setText("turn");
         holder.gameImage.setBackgroundResource(imageId);
     }
 

@@ -1,5 +1,6 @@
 package com.maksimovamaris.chess.game.action;
 
+import android.content.Context;
 import android.widget.Toast;
 
 import com.maksimovamaris.chess.game.figures.Bishop;
@@ -19,13 +20,14 @@ public class Game {
     private Player currentPlayer;
     private BoardDirector boardDirector;
     private BoardView boardView;
-    private Runner moveAnalyser;
+    private Runner runner;
     private Boolean isMate;
     private Cell attack;
+    private boolean first_move;
 
-    public Game(Runner analyser) {
+    public Game(Runner runner) {
         isMate = null;
-        moveAnalyser = analyser;
+        this.runner = runner;
     }
 
     private void createPlayers() {
@@ -35,12 +37,13 @@ public class Game {
         mPlayer2 = new Player(Colors.BLACK, "Player_2", false);
     }
 
-    public void createGame() {
-        boardDirector = new BoardDirector();
+    public void createGame(Context context) {
+        boardDirector = new BoardDirector(context);
         boardDirector.startGame();
         createPlayers();
         currentPlayer = mPlayer1;
         attack = null;
+        first_move = true;
     }
 
     public BoardDirector getBoardDirector() {
@@ -108,18 +111,27 @@ public class Game {
      * @param c1 куда ходим
      */
     void checkMove(Cell c0, Cell c1) {
-        moveAnalyser.runInBackground(() -> {
+        runner.runInBackground(() -> {
             ChessFigure savedFigure = null;
             if (checkFigure(c0, c1)) {
-                if (boardDirector.getFigure(c1) != null)
-                    savedFigure = boardDirector.getFigure(c1);//прихраняем убитую фигуру
-                updateGame(c0, c1, null);
+//                if (boardDirector.getFigure(c1) != null)
+                savedFigure = boardDirector.getFigure(c1);//прихраняем то что есть в с1
+                updateGame(c0, c1, savedFigure);
                 //если король защищен
                 if (kingProtected(getKingPos())) {
+                    if (first_move) {
+                        first_move = false;
+                        //создание таблиц в базе данных
+                        boardDirector.firstWrite();
+                    } else {
+                        // запись хода
+                        //фигура, стоявшая в с0, УЖЕ переместилась в с1 - ее имя берем из с1
+                        boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(c1)).toString(), c0, c1);
+                    }
                     changePlayer();
                     isMate = null;
                     attack = null;
-                    moveAnalyser.runOnMain(() ->
+                    runner.runOnMain(() ->
                             notifyView(null));
                     // поменяли игрока, проверка противника на шах/мат
                     //если король противника попал под шах после хода
@@ -129,7 +141,13 @@ public class Game {
                         //если определен мат
                         if (isMate == true) {
                             try {
-                                moveAnalyser.runOnMain(() -> Toast.makeText(boardView.getContext(), "Mate!", Toast.LENGTH_SHORT).show());
+                                boardDirector.cleanGame();
+                                runner.runOnMain(() -> {
+                                    Toast.makeText(boardView.getContext(), "Mate!", Toast.LENGTH_SHORT).show();
+                                    detachView();
+                                });
+
+
                             } catch (NullPointerException e) {
                                 boardView.printMessage("Mate!");
                             }
@@ -137,7 +155,7 @@ public class Game {
                         //иначе только шах
                         else {
                             try {
-                                moveAnalyser.runOnMain(() -> Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show());
+                                runner.runOnMain(() -> Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show());
                             } catch (NullPointerException e) {
                                 boardView.printMessage("Check!");
                             }
@@ -145,18 +163,24 @@ public class Game {
                     }
                     //если все хорошо, проверяем на ничью
                     else {
-                        if (checkDraw())
+                        if (checkDraw()) {
                             try {
-                                moveAnalyser.runOnMain(() -> Toast.makeText(boardView.getContext(), "Draw", Toast.LENGTH_SHORT).show());
+                                boardDirector.cleanGame();
+                                runner.runOnMain(() -> {
+                                    Toast.makeText(boardView.getContext(), "Draw", Toast.LENGTH_SHORT).show();
+                                    detachView();
+                                });
+
                             } catch (NullPointerException e) {
                                 boardView.printMessage("Draw");
                             }
+                        }
                     }
                 } else {
                     //откатываемся обратно, король в опасности
                     updateGame(c1, c0, savedFigure);
                     try {
-                        moveAnalyser.runOnMain(() ->
+                        runner.runOnMain(() ->
                                 Toast.makeText(boardView.getContext(), "Protect your king!", Toast.LENGTH_SHORT).show());
                     } catch (NullPointerException e) {
                         boardView.printMessage("Protect your king!");
@@ -164,7 +188,7 @@ public class Game {
                 }
             } else
                 try {
-                    moveAnalyser.runOnMain(() ->
+                    runner.runOnMain(() ->
                             Toast.makeText(boardView.getContext(), "Incorrect move", Toast.LENGTH_SHORT).show());
                 } catch (NullPointerException e) {
                     boardView.printMessage("Incorrect move");
@@ -263,10 +287,10 @@ public class Game {
 
         //если осталось 1 фигура у кого-то
         if ((boardDirector.getArmy().size() == 1)
-        //если эта фигура слон или конь
-        &&((boardDirector.getArmy().get(0) instanceof Bishop)
-        || (boardDirector.getArmy().get(0) instanceof Knight)))
-                return true;
+                //если эта фигура слон или конь
+                && ((boardDirector.getArmy().get(0) instanceof Bishop)
+                || (boardDirector.getArmy().get(0) instanceof Knight)))
+            return true;
 
         //иначе если осталось произвольное количество однопольных слонов
         int i;
@@ -360,7 +384,7 @@ public class Game {
     void restoreGame(BoardDirector director, String turn) {
 
         createPlayers();
-        if (turn == "White")
+        if (turn == "white")
             currentPlayer = mPlayer1;
         else
             currentPlayer = mPlayer2;
@@ -369,13 +393,13 @@ public class Game {
     }
 
 
-
     public void attachView(BoardView view) {
         boardView = view;
         view.setGame(this);
     }
 
     public void detachView() {
+        //удаляем игру, она не нужна
         boardView = null;
     }
 

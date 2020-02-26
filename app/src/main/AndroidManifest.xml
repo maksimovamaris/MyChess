@@ -10,6 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
         android:name=".ChessApplication"
+
        >
 
         <activity android:name="com.maksimovamaris.chess.MainActivity">
@@ -20,7 +21,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".preferences.PreferencesActivity" />
-        <activity android:name=".GameActivity" />
+        <activity android:name=".view.games.GameActivity"
+            />
     </application>
 
 </manifest>

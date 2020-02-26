@@ -1,21 +1,34 @@
 package com.maksimovamaris.chess.game.action;
 
+import android.content.Context;
+import android.util.Log;
+
 import com.maksimovamaris.chess.game.figures.*;
+import com.maksimovamaris.chess.repository.GamesRepositoryImpl;
+import com.maksimovamaris.chess.repository.RepositoryHolder;
+
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class BoardDirector {
     private Board board;
-
+    private GamesRepositoryImpl repository;
+    private Date date;
     Cell whiteKingPos;
     Cell blackKingPos;
+    private static String TAG="In TestGameBehavour";
 
-    public BoardDirector() {
+    public BoardDirector(Context context) {
 
         board = new Board();
-
-
+        date = new Date();
+        try {
+            repository = ((RepositoryHolder) (context.getApplicationContext())).getRepository();
+        } catch (NullPointerException e) {
+            Log.d(TAG, "BoardDirector() called with: context = [" + context + "]");
+        }
     }
 
     /**
@@ -81,7 +94,7 @@ public class BoardDirector {
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
                 //если ячейка не пуста и это не король
-                if ((board.field[i][j] != null)&&!(board.field[i][j] instanceof King)) {
+                if ((board.field[i][j] != null) && !(board.field[i][j] instanceof King)) {
                     army.add(board.field[i][j]);
                 }
         return army;
@@ -89,10 +102,6 @@ public class BoardDirector {
 
     public ChessFigure getFigure(Cell c) {
         return board.field[c.getX()][c.getY()];
-    }
-
-    public void saveGame() {
-
     }
 
     public void restoreGame() {
@@ -126,13 +135,49 @@ public class BoardDirector {
 
     /**
      * для тестирования
+     *
      * @param b доска с нужной позицией
      */
-    public void setBoard(Board b,Cell whiteKingPos,Cell blackKingPos)
-{
-    board.field=b.field;
-    this.whiteKingPos=whiteKingPos;
-    this.blackKingPos=blackKingPos;
-}
+    public void setBoard(Board b, Cell whiteKingPos, Cell blackKingPos) {
+        board.field = b.field;
+        this.whiteKingPos = whiteKingPos;
+        this.blackKingPos = blackKingPos;
+    }
 
+    /**
+     * Записывает игру в базу данных, начиная с первого хода
+     */
+    void firstWrite() {
+        try {
+            repository.addGame(date);
+        } catch (NullPointerException e) {//для тестов
+            Log.d(TAG, "firstWrite() called");
+        }
+    }
+
+    /**
+     * Записывает ход в таблицу moves
+     * @param figureName имя фигуры
+     * @param c0 откуда пошла
+     * @param c1 куда пошла
+     */
+    void writeMove(String figureName, Cell c0, Cell c1) {
+        try {
+            repository.addMove(figureName, c0, c1);
+        }
+        catch (NullPointerException e)
+        {
+            Log.d(TAG, "writeMove() called with: figureName = [" + figureName + "], c0 = [" + c0 + "], c1 = [" + c1 + "]");
+        }
+    }
+
+    void cleanGame()
+    {
+        try{
+        repository.deleteGame(date);}
+        catch (NullPointerException e)
+        {
+            Log.d(TAG, "cleanGame() called");
+        }
+    }
 }

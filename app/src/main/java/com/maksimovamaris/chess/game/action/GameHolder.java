@@ -1,5 +1,8 @@
 package com.maksimovamaris.chess.game.action;
 
+import com.maksimovamaris.chess.utils.Runner;
+
 public interface GameHolder {
-    public Game getGame();
+    Game getGame();
+    Runner getRunner();
 }

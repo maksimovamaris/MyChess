@@ -8,17 +8,18 @@ import java.util.concurrent.Executors;
 
 public class TaskRunner implements Runner {
 
-    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     public void runInBackground(Runnable task) {
-        mExecutor.submit(task);
+        executor.submit(task);
     }
 
     @Override
     public void runOnMain(Runnable task) {
-        mHandler.post(task);
+        handler.post(task);
     }
+
 
 }

@@ -1,20 +1,25 @@
-package com.maksimovamaris.chess;
+package com.maksimovamaris.chess.view.games;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.preference.PreferenceManager;
 
+import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.game.action.Game;
 import com.maksimovamaris.chess.game.action.GameHolder;
+
 import com.maksimovamaris.chess.view.BoardView;
+
+
+
 
 public class GameActivity extends AppCompatActivity {
 
     private BoardView boardView;
-
     private Game game;
 
 
@@ -25,8 +30,6 @@ public class GameActivity extends AppCompatActivity {
         boardView = findViewById(R.id.board_view);
         game = ((GameHolder) (getApplication())).getGame();
         game.attachView(boardView);
-
-
     }
 
     @Override
