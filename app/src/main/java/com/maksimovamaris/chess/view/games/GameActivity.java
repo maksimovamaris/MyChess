@@ -127,5 +127,10 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
     public void lock() {
         lockView.setVisibility(View.VISIBLE);
     }
+
+    @Override
+    public void unlock() {
+        lockView.setVisibility(View.GONE);
+    }
 }
 

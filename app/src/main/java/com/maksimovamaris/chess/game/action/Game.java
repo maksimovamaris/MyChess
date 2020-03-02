@@ -1,6 +1,7 @@
 package com.maksimovamaris.chess.game.action;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.maksimovamaris.chess.game.figures.Bishop;
@@ -16,8 +17,6 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
- *
  * @author машуля
  * класс, выполняющий основную логику игры,
  * анализирует ситуацию на доске, общается с
@@ -40,6 +39,7 @@ public class Game {
     private boolean notation;
     private GameEndListener gameEndListener;
     private GameLocker locker;
+    private ArrayList<Cell> bot_rescue;
 
     public Game(Runner runner) {
         isMate = null;
@@ -189,12 +189,18 @@ public class Game {
                     // запись хода
                     //фигура, стоявшая в с0, УЖЕ переместилась в с1 - ее имя берем из с1
                     boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(c1)).toString(), c0, c1);
-
                     changePlayer();
                     isMate = null;
                     attack = null;
-                    runner.runOnMain(() ->
-                            notifyView(null));
+                    //следующий игрок- бот
+
+
+                    runner.runOnMain(() -> {
+                                notifyView(null);
+//                                locker.lock();
+//                                Toast.makeText(boardView.getContext(), "Bot is playing", Toast.LENGTH_LONG).show();
+                            }
+                    );
                     // поменяли игрока, проверка противника на шах/мат
                     //если король противника попал под шах после хода
                     if (!kingProtected(getKingPos())) {
@@ -210,7 +216,6 @@ public class Game {
 
                                 });
 
-
                             } catch (NullPointerException e) {
                                 boardView.printMessage("Mate!");
                             }
@@ -222,6 +227,15 @@ public class Game {
                             } catch (NullPointerException e) {
                                 boardView.printMessage("Check!");
                             }
+
+//                            updateGame(bot_rescue.get(0), bot_rescue.get(1), null);
+//                            changePlayer();
+//                            runner.runOnMain(() -> {
+//                                notifyView(null);
+//                                bot_rescue.clear();
+//                                locker.unlock();
+//                            });
+
                         }
                     }
                     //если все хорошо, проверяем на ничью
@@ -237,6 +251,21 @@ public class Game {
                                 boardView.printMessage("Draw");
                             }
                         }
+
+                        //если нет ничьи и шаха, бот еще не сходил
+                        //делаем ход за бота
+
+//                        else {
+//                            Toast.makeText(boardView.getContext(), "No draw", Toast.LENGTH_SHORT).show();
+//                            runner.runOnMain(() -> {
+//                                updateGame(bot_rescue.get(0), bot_rescue.get(1), null);
+//                                changePlayer();
+//                                notifyView(null);
+//                                bot_rescue.clear();
+//                                locker.unlock();
+//                            });
+//                        }
+
                     }
                 } else {
                     //откатываемся обратно, король в опасности
@@ -258,6 +287,11 @@ public class Game {
         });
     }
 
+    //бот предположительно всегда черный
+    private void moveBot() {
+
+    }
+
     /**
      * @param attack позиция атакующей короля фигуры
      * @return если матовая ситуация, возвращает true, иначе false
@@ -266,8 +300,11 @@ public class Game {
         //проверка, может ли король убежать
         ChessFigure savedFigure;
         for (Cell c : boardDirector.getFigure(getKingPos()).getPossiblePositions(boardDirector)) {
-            if (canMove(getKingPos(), c))
+            if (canMove(getKingPos(), c)) {
+                bot_rescue.add(getKingPos());
+                bot_rescue.add(c);
                 return false;
+            }
         }
         //определение линии поражения
         List<Cell> lineAttack = new ArrayList();
@@ -304,8 +341,11 @@ public class Game {
                     for (Cell c : lineAttack)
                         //проверяем каждую ячейку линии на бой фигурой
                         //если фигура может туда сходить и после этого король не в опасности
-                        if (canMove(new Cell(i, j), c))
+                        if (canMove(new Cell(i, j), c)) {
+                            bot_rescue.add(new Cell(i, j));
+                            bot_rescue.add(c);
                             return false;
+                        }
         return true;
     }
 
@@ -381,8 +421,11 @@ public class Game {
             //проверяем каждую из них, может ли она сходить
             if (figure.getPossiblePositions(boardDirector).size() != 0)
                 for (Cell c : figure.getPossiblePositions(boardDirector))  //проходимся по возможным ходам фигуры, проверяем безопасность короля после потенциального хода
-                    if (canMove(new FigureInfo().getPosition(figure), c))
+                    if (canMove(new FigureInfo().getPosition(figure), c)) {
+                        bot_rescue.add(new FigureInfo().getPosition(figure));
+                        bot_rescue.add(c);
                         return false;
+                    }
 
 
         return true;
@@ -470,7 +513,7 @@ public class Game {
     }
 
     public void detachView() {
-                boardView = null;
+        boardView = null;
     }
 
     /**
