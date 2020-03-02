@@ -4,6 +4,10 @@ import com.maksimovamaris.chess.game.action.Cell;
 
 import java.util.List;
 
+/**
+ * Класс-родитель всех шахматных фигур на доске
+ * @author машуля
+ */
 public abstract class ChessFigure {
 
     FigureInfo info;

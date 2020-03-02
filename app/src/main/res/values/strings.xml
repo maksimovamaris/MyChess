@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MyChess</string>
+    <string name="app_name">Chess</string>
     <string name="theme_color_pref_title">Select theme</string>
     <string name="action_settings">Settings</string>
     <string name="letters">abcdefgh</string>
@@ -25,5 +25,19 @@
     <string name="menu_records">Game records</string>
     <string name="game_time">Android Version</string>
     <string name="game_title">Game</string>
+    <string name="collapsing_toolbar_title">Welcome!</string>
+    <string name="key_notation">NOTATION_FOR_DATE</string>
+    <string name="key_game">GAME_FOR_DATE</string>
+    <string name="key_save_gameState">SAVE</string>
+    <string name="exit_game">Exit</string>
+    <string name="game_result">RESULT</string>
+    <string name="dialog_show">SHOW</string>
+    <string name="delete_title">DELETESTRING</string>
+    <string name="dialog_yes">YES</string>
+    <string name="dialog_cancel">CANCEL</string>
+    <string name="delete_parameter">DELETEDATE</string>
+    <string name="no_records">No Records</string>
+    <string name="delete_dialog_show">DELETESHOW</string>
+    <string name="no_games">No games</string>
 
 </resources>

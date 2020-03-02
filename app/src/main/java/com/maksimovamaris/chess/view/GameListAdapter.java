@@ -1,15 +1,17 @@
-package com.maksimovamaris.chess.view.games;
+package com.maksimovamaris.chess.view;
 
 import android.view.LayoutInflater;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 
-import androidx.cardview.widget.CardView;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.maksimovamaris.chess.R;
@@ -22,41 +24,43 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.GameLi
     private ArrayList<GameData> gamesDataset;
     private int imageId;
 
+    private String title;
 
-    public static class GameListViewHolder extends RecyclerView.ViewHolder {
+    public GameListAdapter(List<GameData> games, @DrawableRes int image, String title) {
+        this.title = title;
+
+        gamesDataset = (ArrayList) (games);
+        imageId = image;
+    }
+
+
+    public class GameListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView gameTime;
         private ImageView gameImage;
         private TextView gameTitle;
-        private CardView gameCard;
 
         public GameListViewHolder(View v) {
+
             super(v);
-            gameCard = v.findViewById(R.id.game_card_view);
             gameTime = v.findViewById(R.id.game_time);
             gameImage = v.findViewById(R.id.game_icon);
-            gameTitle=v.findViewById(R.id.game_title);
-        }
-    }
+            gameTitle = v.findViewById(R.id.game_title);
 
-    public GameListAdapter(List<GameData> games, @DrawableRes int image) {
-        gamesDataset = (ArrayList) (games);
-        imageId = image;
+        }
+
+        @Override
+        public void onClick(View v) {
+
+        }
     }
 
     @NonNull
     @Override
     public GameListAdapter.GameListViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
 
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.games_item, viewGroup, false);
+        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item, viewGroup, false);
         GameListViewHolder gameListViewHolder = new GameListViewHolder(v);
         return gameListViewHolder;
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull GameListViewHolder holder, int position) {
-        holder.gameTime.setText(gamesDataset.get(position).getGame_date().toString());
-        holder.gameTitle.setText("turn");
-        holder.gameImage.setBackgroundResource(imageId);
     }
 
     @Override
@@ -65,8 +69,19 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.GameLi
     }
 
     @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
+    public void onBindViewHolder(@NonNull GameListViewHolder holder, int position) {
+        String color;
+        holder.gameTime.setText(gamesDataset.get(position).getGame_date().toString());
+        if (title == "winner") {
+            if (gamesDataset.get(position).getTurn().toLowerCase().equals("white"))
+                color = "black";
+            else
+                color = "white";
+        } else
+            color = gamesDataset.get(position).getTurn().toLowerCase();
+        holder.gameTitle.setText(color + " " + title);
+        holder.gameImage.setBackgroundResource(imageId);
+
     }
 }
 

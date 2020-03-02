@@ -3,6 +3,8 @@ package com.maksimovamaris.chess.game.action;
 import android.content.Context;
 import android.util.Log;
 
+import com.maksimovamaris.chess.data.GameData;
+import com.maksimovamaris.chess.data.MoveData;
 import com.maksimovamaris.chess.game.figures.*;
 import com.maksimovamaris.chess.repository.GamesRepositoryImpl;
 import com.maksimovamaris.chess.repository.RepositoryHolder;
@@ -12,16 +14,24 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author машуля
+ * класс-посредник между
+ * @see com.maksimovamaris.chess.repository.GamesRepositoryImpl и
+ * @see Game
+ * хранит в себе доску - матрицу 8х8 с фигурами
+ * @see Board
+ *
+ */
 public class BoardDirector {
     private Board board;
     private GamesRepositoryImpl repository;
     private Date date;
     Cell whiteKingPos;
     Cell blackKingPos;
-    private static String TAG="In TestGameBehavour";
+    private static String TAG = "In TestGameBehavour";
 
     public BoardDirector(Context context) {
-
         board = new Board();
         date = new Date();
         try {
@@ -31,10 +41,13 @@ public class BoardDirector {
         }
     }
 
+    public Date getDate() {
+        return date;
+    }
+
     /**
      * Расставляет фигуры в первоначальное положение
      */
-
     public void startGame() {
         whiteKingPos = new Cell(4, 0);
         blackKingPos = new Cell(4, 7);
@@ -104,8 +117,38 @@ public class BoardDirector {
         return board.field[c.getX()][c.getY()];
     }
 
-    public void restoreGame() {
+    /**
+     * @param date дата игры, которую хотим восстановить
+     * @return возвращает позицию на доске, восстановленную по ходам
+     */
+    public int restoreGame(Date date) {
 
+        //подготавливаем нужные ходы
+        List<MoveData> moveData = repository.getGameNotation(date);
+        //сохраняем последний ход, чтобы передать его игре для анализа
+
+//        MoveData lastMove = moveData.get(moveData.size()-1);
+
+        //восстанавливаем все до последнего хода
+//        moveData.remove(moveData.size()-1);
+
+
+//        Collections.sort(moveData); - на всякий случай если записи будут выбираться не в том поядке
+        //начинаем с чистой доски с начальными позициями фигур
+        //(она у нас уже есть)
+        //ставим ту же дату, что была в восстановленной игре
+        this.date = date;
+        for (MoveData d : moveData) {
+            Cell c0 = new Cell(d.getX0(), d.getY0());
+            Cell c1 = new Cell(d.getX1(), d.getY1());
+            //savedFigure всегда null,
+            //мы не будем ничего прихранять, так как не собираемся откатываться назад
+            //название фигур не нужно, оно только для нотации
+            updateBoard(c0, c1, null);
+        }
+//        return lastMove;
+
+        return moveData.size();
     }
 
     /**
@@ -150,6 +193,7 @@ public class BoardDirector {
     void firstWrite() {
         try {
             repository.addGame(date);
+
         } catch (NullPointerException e) {//для тестов
             Log.d(TAG, "firstWrite() called");
         }
@@ -157,27 +201,42 @@ public class BoardDirector {
 
     /**
      * Записывает ход в таблицу moves
+     *
      * @param figureName имя фигуры
-     * @param c0 откуда пошла
-     * @param c1 куда пошла
+     * @param c0         откуда пошла
+     * @param c1         куда пошла
      */
     void writeMove(String figureName, Cell c0, Cell c1) {
         try {
-            repository.addMove(figureName, c0, c1);
-        }
-        catch (NullPointerException e)
-        {
+            repository.addMove(figureName, c0, c1, date);
+        } catch (NullPointerException e) {
             Log.d(TAG, "writeMove() called with: figureName = [" + figureName + "], c0 = [" + c0 + "], c1 = [" + c1 + "]");
         }
     }
 
-    void cleanGame()
-    {
-        try{
-        repository.deleteGame(date);}
-        catch (NullPointerException e)
-        {
+    void updateGameTurn(String turn, boolean notation) {
+        GameData gameData = new GameData();
+        gameData.setGame_date(date);
+        gameData.setNotation(notation);
+        gameData.setTurn(turn);
+        repository.updateGame(gameData);
+    }
+
+    void cleanGame() {
+        try {
+            repository.deleteGameByDate(date);
+        } catch (NullPointerException e) {
             Log.d(TAG, "cleanGame() called");
         }
     }
+
+    /**
+     * убирает ненужную фигуру с доски
+     *
+     * @param c ячейка, которую нужно очистить
+     */
+    void cleanCell(Cell c) {
+        board.field[c.getX()][c.getY()] = null;
+    }
+
 }

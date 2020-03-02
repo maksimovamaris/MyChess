@@ -1,6 +1,5 @@
 package com.maksimovamaris.chess.game.figures;
 
-import com.maksimovamaris.chess.utils.Runner;
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
 
@@ -8,11 +7,14 @@ import com.maksimovamaris.chess.game.action.Cell;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Конь. Скачет буквой Г
+ */
 public class Knight extends ChessFigure {
     private List<Cell> possibleCells;
 
 
-    public Knight(Colors color, Cell c ) {
+    public Knight(Colors color, Cell c) {
         super(color, c);
         name = Figures.KNIGHT;
     }

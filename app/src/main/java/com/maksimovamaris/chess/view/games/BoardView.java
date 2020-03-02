@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.view;
+package com.maksimovamaris.chess.view.games;
 
 import com.maksimovamaris.chess.game.figures.*;
 
@@ -21,9 +21,15 @@ import com.maksimovamaris.chess.game.action.Cell;
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.game.action.Game;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * отображает фигуры на доске, общается с
+ * @see Game
+ * @author машуля
+ */
 public class BoardView extends View {
     private static final float STROKE_WIDTH = 2.0f;
     private static final float HINT_WIDTH = 5.0f;
@@ -49,9 +55,9 @@ public class BoardView extends View {
 
     }
 
-    public void setGame(Game g) {
+    public void setGame(Game g, Date date) {
         game = g;
-        game.createGame(getContext());
+        game.createGame(getContext(),date);
     }
 
     public void setColors(int colorDark, int colorLight) {
@@ -177,6 +183,10 @@ public class BoardView extends View {
 
     public void printMessage(String message) {
         //для теста
+    }
+    public void lock()
+    {
+        this.setClickable(false);
     }
 }
 

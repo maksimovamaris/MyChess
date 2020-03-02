@@ -12,4 +12,6 @@
     <color name="cellLightMint">#B6E7E7</color>
     <color name="blue">#0238FA</color>
     <color name="colorLight">#A8ACAC</color>
+    <color name="colorWhite">#FFFFFF</color>
+
 </resources>

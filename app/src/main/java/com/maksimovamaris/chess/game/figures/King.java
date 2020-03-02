@@ -1,14 +1,21 @@
 package com.maksimovamaris.chess.game.figures;
+
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Король. Сердце армии. Ходит на одну клетку во все стороны
+ *
+ * @author машуля
+ */
 public class King extends ChessFigure {
 
 
-    public King(Colors color, Cell c ) {
+    public King(Colors color, Cell c) {
         super(color, c);
         name = Figures.KING;
     }

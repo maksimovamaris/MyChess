@@ -10,12 +10,14 @@ import com.maksimovamaris.chess.game.figures.Pawn;
 import com.maksimovamaris.chess.game.figures.Queen;
 import com.maksimovamaris.chess.game.figures.Rook;
 import com.maksimovamaris.chess.utils.StubRunner;
-import com.maksimovamaris.chess.view.BoardView;
+import com.maksimovamaris.chess.view.games.BoardView;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+
+import java.util.Date;
 
 import static org.mockito.Mockito.mock;
 
@@ -32,16 +34,18 @@ public class TestGameBehavour {
     private Cell upperKingPos;
     private Cell lowerKingPos;
     private Context context;
+    private Date date;
 
     @Before
     public void prepare() {
-        context=mock(Context.class);
+        date = null;
+        context = mock(Context.class);
         testGame = new Game(new StubRunner());
         boardView = mock(BoardView.class);
         viewContext = mock(Context.class);
         when(boardView.getContext()).thenReturn(viewContext);
-        testGame.createGame(context);
-        testGame.attachView(boardView);
+        testGame.createGame(context, date);
+        testGame.attachView(boardView, date);
         //так как класс Game плотно общается с BoardDirector'ом, без реального экземпляра BoardDirector'а логику Game не протестировать
         board = new Board();
         director = new BoardDirector(context);
@@ -156,7 +160,7 @@ public class TestGameBehavour {
         prepareLineMateState();
         board.field[5][2] = new Queen(Colors.BLACK, new Cell(5, 2));
         director.setBoard(board, new Cell(0, 7), new Cell(0, 0));
-        testGame.restoreGame(director, "black");
+        testGame.restoreTestGame(director, "black");
         testGame.viewAction(new Cell(7, 6), new Cell(7, 7));
         verify(boardView).printMessage("Mate!");
     }
@@ -168,7 +172,7 @@ public class TestGameBehavour {
     public void testNoLineMate() {
         prepareLineMateState();
         director.setBoard(board, new Cell(0, 7), new Cell(0, 0));
-        testGame.restoreGame(director, "black");
+        testGame.restoreTestGame(director, "black");
         testGame.viewAction(new Cell(7, 6), new Cell(7, 7));
         verify(boardView).printMessage("Check!");
     }
@@ -191,7 +195,7 @@ public class TestGameBehavour {
 
     private void prepareGameState(Cell whiteKingPos, Cell blackKingPos, String turn) {
         director.setBoard(board, whiteKingPos, blackKingPos);
-        testGame.restoreGame(director, turn);
+        testGame.restoreTestGame(director, turn);
     }
 
     /**
@@ -273,14 +277,13 @@ public class TestGameBehavour {
         testDraw();
     }
 
-    private void prepareDrawKings()
-    {
+    private void prepareDrawKings() {
         board.field[0][7] = new King(Colors.BLACK, upperKingPos);
         board.field[0][0] = new King(Colors.WHITE, lowerKingPos);
     }
+
     @Test
-    public void testDrawKings()
-    {
+    public void testDrawKings() {
         prepareDrawKings();
         testDraw();
     }
@@ -289,19 +292,17 @@ public class TestGameBehavour {
      * подготовка позиции для пата
      * белым некуда ходить, после хода черных объявляется ничья
      */
-    private void prepareStaleMate()
-    {
+    private void prepareStaleMate() {
         board.field[0][7] = new King(Colors.BLACK, upperKingPos);
         board.field[0][0] = new King(Colors.WHITE, lowerKingPos);
-        board.field[0][2]=new Queen(Colors.BLACK,new Cell(0,2));
-        board.field[0][1]=new Bishop(Colors.BLACK,new Cell(0,1));
-        board.field[1][6]=new Pawn(Colors.WHITE,new Cell(1,6));
+        board.field[0][2] = new Queen(Colors.BLACK, new Cell(0, 2));
+        board.field[0][1] = new Bishop(Colors.BLACK, new Cell(0, 1));
+        board.field[1][6] = new Pawn(Colors.WHITE, new Cell(1, 6));
 
     }
 
     @Test
-    public void testStaleMate()
-    {
+    public void testStaleMate() {
         prepareStaleMate();
         testDraw();
     }

@@ -10,7 +10,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
         android:name=".ChessApplication"
-
        >
 
         <activity android:name="com.maksimovamaris.chess.MainActivity">
@@ -22,7 +21,9 @@
         </activity>
         <activity android:name=".preferences.PreferencesActivity" />
         <activity android:name=".view.games.GameActivity"
+            android:screenOrientation="portrait"
             />
+        <activity android:name=".view.notation.GameNotationActivity" />
     </application>
 
 </manifest>

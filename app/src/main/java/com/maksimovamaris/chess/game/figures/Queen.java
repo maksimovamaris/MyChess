@@ -7,6 +7,10 @@ import com.maksimovamaris.chess.game.action.Cell;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Ферзь. Самый мощный воин. Ходит как по прямой, так и по диагонали
+ * @author машуля
+ */
 public class Queen extends ChessFigure {
 
 

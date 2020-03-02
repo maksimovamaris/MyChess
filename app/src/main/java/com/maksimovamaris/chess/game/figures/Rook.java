@@ -6,6 +6,11 @@ import com.maksimovamaris.chess.game.action.Cell;
 
 import java.util.List;
 
+/**
+ * Ладья. Ходит по прямым
+ * @see StraightMovingHelper
+ * @author машуля
+ */
 public class Rook extends ChessFigure {
 
     public Rook(Colors color, Cell c) {
