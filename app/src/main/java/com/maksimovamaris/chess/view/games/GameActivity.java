@@ -2,8 +2,8 @@ package com.maksimovamaris.chess.view.games;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,8 +19,8 @@ import com.maksimovamaris.chess.game.action.GameHelper;
 import com.maksimovamaris.chess.game.action.GameHolder;
 import com.maksimovamaris.chess.game.action.GameLocker;
 
-import java.util.Date;
 
+import java.util.Date;
 
 public class GameActivity extends AppCompatActivity implements GameEndListener, GameLocker {
 
@@ -29,18 +29,24 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
     private Date savedDate;
     private Date gameDate;
     private View lockView;
-    private Bundle savedState;
+    private String gameName;
+    private String humanPlayer;
+    private String botPlayer;
+    private TextView player1Text;
+    private TextView player2Text;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        savedState = savedInstanceState;
         setContentView(R.layout.activity_game);
         lockView = findViewById(R.id.shadow_view);
         boardView = findViewById(R.id.board_view);
+        player1Text = findViewById(R.id.player1_text);
+        player2Text = findViewById(R.id.player2_text);
         //получаем игру
         game = ((GameHolder) (getApplication())).getGame();
         gameDate = null;
+
     }
 
     @Override
@@ -76,6 +82,7 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         savedDate = new DateConverter().toDate(savedInstanceState.getLong(getResources().getString(R.string.key_save_gameState)));
+
     }
 
     @Override
@@ -83,54 +90,80 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
         super.onResume();
         if (savedDate != null) {
             gameDate = savedDate;
-            game.attachView(boardView, gameDate);
-        } else {
+        } else
+            {
             Bundle arguments = getIntent().getExtras();
             if (arguments != null) {
                 gameDate = (Date) (arguments.get(getResources().getString(R.string.key_game)));
+                gameName = (String) (arguments.get(getResources().getString(R.string.game_name)));
+                humanPlayer = (String) (arguments.get(getResources().getString(R.string.human_player)));
+                botPlayer = (String) (arguments.get(getResources().getString(R.string.bot_player)));
+
+//                if (botPlayer.equals(Colors.WHITE.toString()))
+//                {
+//                    player1Text.setText("Bot");
+//                    player2Text.setText(humanPlayer);
+//                }
+//                else
+//                if (botPlayer.equals(Colors.BLACK.toString()))
+//                {player1Text.setText(humanPlayer);
+//                    player2Text.setText("Bot");}
+//                else
+//                {
+//                    player1Text.setText(humanPlayer);
+//                    player2Text.setText(humanPlayer);
+//                }
+
+
             }
         }
 
-        game.setGameEndListener(this);
-        game.setLocker(this);
-        game.attachView(boardView, gameDate);
+            game.setGameEndListener(this);
+            game.setLocker(this);
+            game.initGame(getBaseContext());
+            if (gameDate == null)
+                game.createGame(gameName, humanPlayer, botPlayer);
+            else
+                game.restoreGame(gameDate);
+            //после того, как игра приобрела нужное состояние,
+            //прикрепляем ее к view
+            game.attachView(boardView);
+        }
+
+        /**
+         * когда пользователь вышел из игры запоминаем,
+         * кто сделал последний ход
+         * чтобы отобразить это в адаптере
+         */
+        @Override
+        protected void onDestroy () {
+            game.updateTurn();
+            super.onDestroy();
+
+        }
+
+        @Override
+        public void endGame (String result){
+            FragmentManager manager = getSupportFragmentManager();
+            GameEndDialog gameEndDialog = new GameEndDialog();
+            Bundle bundle = new Bundle();
+            bundle.putString(getResources().getString(R.string.game_result), result);
+            gameEndDialog.setArguments(bundle);
+            gameEndDialog.setGameNotationListener(new GameHelper(getApplicationContext()));
+            gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
+        }
+
+        /**
+         * для бота
+         */
+        @Override
+        public void lock () {
+            lockView.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void unlock () {
+            lockView.setVisibility(View.GONE);
+        }
     }
-
-    /**
-     * когда пользователь вышел из игры запоминаем,
-     * кто сделал последний ход
-     * чтобы отобразить это в адаптере
-     */
-    @Override
-    protected void onDestroy() {
-        game.updateTurn();
-        super.onDestroy();
-
-    }
-
-    @Override
-    public void endGame(String result) {
-
-        FragmentManager manager = getSupportFragmentManager();
-        GameEndDialog gameEndDialog = new GameEndDialog();
-        Bundle bundle = new Bundle();
-        bundle.putString(getResources().getString(R.string.game_result), result);
-        gameEndDialog.setArguments(bundle);
-        gameEndDialog.setGameNotationListener(new GameHelper(getApplicationContext()));
-        gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
-    }
-
-    /**
-     * для бота
-     */
-    @Override
-    public void lock() {
-        lockView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void unlock() {
-        lockView.setVisibility(View.GONE);
-    }
-}
 

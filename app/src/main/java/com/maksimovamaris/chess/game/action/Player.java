@@ -5,13 +5,11 @@ import com.maksimovamaris.chess.game.figures.Colors;
 
 public class Player {
     private Colors color;
-    private String name;
     private boolean isBot;
     private boolean canMove = false;
 
-    public Player(Colors color, String name, boolean isBot) {
+    public Player(Colors color, boolean isBot) {
         this.color = color;
-        this.name = name;
         this.isBot = isBot;
     }
 
@@ -23,8 +21,9 @@ public class Player {
         return color;
     }
 
-    public boolean canMove() {
-        return canMove;
+
+    public void setBot(boolean bot) {
+        isBot = bot;
     }
 
     public void setFlag_move(boolean flag_move) {

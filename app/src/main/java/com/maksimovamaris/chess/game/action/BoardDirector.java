@@ -21,7 +21,6 @@ import java.util.List;
  * @see Game
  * хранит в себе доску - матрицу 8х8 с фигурами
  * @see Board
- *
  */
 public class BoardDirector {
     private Board board;
@@ -30,6 +29,11 @@ public class BoardDirector {
     Cell whiteKingPos;
     Cell blackKingPos;
     private static String TAG = "In TestGameBehavour";
+    String botPlayer;
+    String gameName;
+    String humanPlayer;
+    double score;
+
 
     public BoardDirector(Context context) {
         board = new Board();
@@ -39,6 +43,18 @@ public class BoardDirector {
         } catch (NullPointerException e) {
             Log.d(TAG, "BoardDirector() called with: context = [" + context + "]");
         }
+    }
+
+    public void setBotPlayer(String botPlayer) {
+        this.botPlayer = botPlayer;
+    }
+
+    public void setGameName(String gameName) {
+        this.gameName = gameName;
+    }
+
+    public void setHumanPlayer(String humanPlayer) {
+        this.humanPlayer = humanPlayer;
     }
 
     public Date getDate() {
@@ -97,6 +113,7 @@ public class BoardDirector {
                 }
             }
         }
+        countScores();
     }
 
     /**
@@ -125,15 +142,11 @@ public class BoardDirector {
 
         //подготавливаем нужные ходы
         List<MoveData> moveData = repository.getGameNotation(date);
-        //сохраняем последний ход, чтобы передать его игре для анализа
+        GameData gameData = repository.getGameByDate(date);
+        this.setGameName(gameData.getName());
+        this.setHumanPlayer(gameData.getHuman_player());
+        this.setBotPlayer(gameData.getBot_player());
 
-//        MoveData lastMove = moveData.get(moveData.size()-1);
-
-        //восстанавливаем все до последнего хода
-//        moveData.remove(moveData.size()-1);
-
-
-//        Collections.sort(moveData); - на всякий случай если записи будут выбираться не в том поядке
         //начинаем с чистой доски с начальными позициями фигур
         //(она у нас уже есть)
         //ставим ту же дату, что была в восстановленной игре
@@ -144,34 +157,53 @@ public class BoardDirector {
             //savedFigure всегда null,
             //мы не будем ничего прихранять, так как не собираемся откатываться назад
             //название фигур не нужно, оно только для нотации
-            updateBoard(c0, c1, null);
+            updateBoard(c0, c1);
         }
-//        return lastMove;
-
         return moveData.size();
     }
 
     /**
      * процедура обновляет доску
      *
-     * @param c0          обнуляется
-     * @param c1          сюда становится фигура, занимавшая позицию с0
-     * @param savedFigure что нужно поставить на месте того, что стало null (если это нужно)
+     * @param c0 обнуляется
+     * @param c1 сюда становится фигура, занимавшая позицию с0
+     *           вместе с доской обновляется сумма очков на доске для фигур
      */
-    public void updateBoard(Cell c0, Cell c1, ChessFigure savedFigure) {
+    public void updateBoard(Cell c0, Cell c1) {
+        double scoreBeforeC0;
+        double scoreBeforeC1;
+        double scoreAfterC1;
+//посчитали очки фигур в с0 и в с1 до перестановки - это будем отнимать
+        scoreBeforeC0 = computeScoreInCell(c0);
+        scoreBeforeC1 = computeScoreInCell(c1);
+
         if (this.getFigure(c0) instanceof King) {
             if (new FigureInfo().getColor(this.getFigure(c0)) == Colors.BLACK)
                 blackKingPos = c1;
             else
                 whiteKingPos = c1;
         }
+
         new FigureInfo().setPosition(board.field[c0.getX()][c0.getY()], c1);
         board.field[c1.getX()][c1.getY()] = board.field[c0.getX()][c0.getY()];
-        board.field[c0.getX()][c0.getY()] = savedFigure;
+        board.field[c0.getX()][c0.getY()] = null;
+
+//                savedFigure;
+
+        //переставили фигуры, посчитали, что теперь в с1, это прибавим
+
+        scoreAfterC1 = computeScoreInCell(c1);
+        score = score - scoreBeforeC0 - scoreBeforeC1 + scoreAfterC1;
+
 
     }
 
-    //c1- проверяемая ячейка, с2 - позиция фигуры для которой проверяем цвет
+    /**
+     * процедура проверяет цвет фигуры в клетке доски
+     *
+     * @param c1- проверяемая ячейка,
+     * @param c2  - позиция фигуры для которой проверяем цвет
+     */
     public boolean sameColor(Cell c1, Cell c2) {
         return ((this.getFigure(c1) != null) && (new FigureInfo().getColor(this.getFigure(c1)) == new FigureInfo().getColor(this.getFigure(c2))));
     }
@@ -192,7 +224,7 @@ public class BoardDirector {
      */
     void firstWrite() {
         try {
-            repository.addGame(date);
+            repository.addGame(date, gameName, humanPlayer, botPlayer);
 
         } catch (NullPointerException e) {//для тестов
             Log.d(TAG, "firstWrite() called");
@@ -217,26 +249,39 @@ public class BoardDirector {
     void updateGameTurn(String turn, boolean notation) {
         GameData gameData = new GameData();
         gameData.setGame_date(date);
+        gameData.setName(gameName);
+        gameData.setHuman_player(humanPlayer);
+        gameData.setBot_player(botPlayer);
         gameData.setNotation(notation);
         gameData.setTurn(turn);
         repository.updateGame(gameData);
     }
 
-    void cleanGame() {
-        try {
-            repository.deleteGameByDate(date);
-        } catch (NullPointerException e) {
-            Log.d(TAG, "cleanGame() called");
-        }
+
+    void restoreFigure(ChessFigure figure, Cell c) {
+        board.field[c.getX()][c.getY()] = figure;
+        score = score + computeScoreInCell(c);
     }
 
-    /**
-     * убирает ненужную фигуру с доски
-     *
-     * @param c ячейка, которую нужно очистить
-     */
-    void cleanCell(Cell c) {
-        board.field[c.getX()][c.getY()] = null;
+
+    void countScores() {
+        double sum = 0;
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++) {
+                sum = sum + computeScoreInCell(new Cell(i, j));
+            }
+        this.score = sum;
+
+    }
+
+    double computeScoreInCell(Cell c) {
+        double score = 0;
+        if (getFigure(c) != null) {
+            score = new FigureInfo().getColor(getFigure(c)).getI() *
+                    (new FigureInfo().getWeight(getFigure(c)) +
+                            (new FigureInfo().getScore(getFigure(c))[c.getX()][c.getY()]));
+        }
+        return score;
     }
 
 }

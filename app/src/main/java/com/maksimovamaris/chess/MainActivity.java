@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -12,7 +13,7 @@ import androidx.navigation.ui.NavigationUI;
 import android.content.Intent;
 
 import android.os.Bundle;
-import android.os.StrictMode;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,12 +24,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import com.maksimovamaris.chess.preferences.PreferencesActivity;
-import com.maksimovamaris.chess.view.games.GameActivity;
+import com.maksimovamaris.chess.view.games.GameStartDialog;
 
 public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
 
     private FloatingActionButton addGameBut;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +44,9 @@ public class MainActivity extends AppCompatActivity {
         addGameBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Intent intent = new Intent(MainActivity.this, GameActivity.class);
-                startActivity(intent);
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                GameStartDialog gameStartDialog = new GameStartDialog();
+                gameStartDialog.show(fragmentManager, getResources().getString(R.string.tag_start_game));
             }
         });
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -61,11 +63,6 @@ public class MainActivity extends AppCompatActivity {
                 .getLayoutParams();
         params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
 
-//        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-//                .detectAll()
-//                .penaltyDialog()
-//                .detectCustomSlowCalls()
-//                .build());
 
     }
 

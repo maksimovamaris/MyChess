@@ -1,7 +1,5 @@
 package com.maksimovamaris.chess.utils;
 
-import com.maksimovamaris.chess.utils.Runner;
-
 public class StubRunner implements Runner {
 
     @Override

@@ -23,7 +23,7 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="menu_games">Games</string>
     <string name="menu_records">Game records</string>
-    <string name="game_time">Android Version</string>
+    <string name="game_time">Time</string>
     <string name="game_title">Game</string>
     <string name="collapsing_toolbar_title">Welcome!</string>
     <string name="key_notation">NOTATION_FOR_DATE</string>
@@ -39,5 +39,18 @@
     <string name="no_records">No Records</string>
     <string name="delete_dialog_show">DELETESHOW</string>
     <string name="no_games">No games</string>
+    <string name="game_name_hint">Game name</string>
+    <string name="player_name_hint">Player name</string>
+    <string name="play_with_bot">Play with bot, select color for bot</string>
+    <string name="select_color">Select color</string>
+    <string name="button_white">white</string>
+    <string name="button_black">black</string>
+    <string name="tag_start_game">STARTGAME</string>
+    <string name="button_play">play</string>
+    <string name="game_name">GAMENAME</string>
+    <string name="human_player">HUMANPLAYER</string>
+    <string name="bot_player">BOTPLAYER</string>
+    <string name="vs">VS</string>
+
 
 </resources>

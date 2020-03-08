@@ -14,6 +14,7 @@ import com.maksimovamaris.chess.view.games.BoardView;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 
@@ -44,13 +45,17 @@ public class TestGameBehavour {
         boardView = mock(BoardView.class);
         viewContext = mock(Context.class);
         when(boardView.getContext()).thenReturn(viewContext);
-        testGame.createGame(context, date);
-        testGame.attachView(boardView, date);
+        testGame.initGame(context);
+        //без бота, имя игры и игрока нам не важно
+        testGame.createGame("","","");
+        testGame.attachView(boardView);
+
         //так как класс Game плотно общается с BoardDirector'ом, без реального экземпляра BoardDirector'а логику Game не протестировать
         board = new Board();
         director = new BoardDirector(context);
         upperKingPos = new Cell(0, 7);
         lowerKingPos = new Cell(0, 0);
+
     }
 
     /**
@@ -59,8 +64,9 @@ public class TestGameBehavour {
 
     @Test
     public void testUpdate() {
+
         testGame.viewAction(new Cell(1, 1), new Cell(1, 3));
-        verify(boardView).updateView(null);
+        verify(boardView).updateView(null,false);
     }
 
     /**
@@ -70,7 +76,7 @@ public class TestGameBehavour {
     @Test
     public void testHints() {
         testGame.viewAction(null, new Cell(1, 1));
-        verify(boardView).updateView(new Cell(1, 1));
+        verify(boardView).updateView(new Cell(1, 1),false);
     }
 
     /**
@@ -211,7 +217,7 @@ public class TestGameBehavour {
         testGame.viewAction(upperKingPos, new Cell(1, 6));
         verify(boardView).printMessage("Protect your king!");
         testGame.viewAction(new Cell(1, 7), new Cell(0, 6));
-        verify(boardView, Mockito.times(2)).updateView(null);
+        verify(boardView, Mockito.times(2)).updateView(null,false);
     }
 
     private void prepareBishopCkeckPosition() {
@@ -230,10 +236,10 @@ public class TestGameBehavour {
         prepareBishopCkeckPosition();
         prepareGameState(lowerKingPos, upperKingPos, "white");
         testGame.viewAction(new Cell(2, 3), new Cell(3, 4));
-        verify(boardView).updateView(null);
+        verify(boardView).updateView(null,false);
         verify(boardView).printMessage("Check!");
         testGame.viewAction(upperKingPos, new Cell(1, 7));
-        verify(boardView, Mockito.times(2)).updateView(null);
+        verify(boardView, Mockito.times(2)).updateView(null,false);
     }
 
     /**

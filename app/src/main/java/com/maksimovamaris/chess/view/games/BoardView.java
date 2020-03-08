@@ -27,8 +27,9 @@ import java.util.List;
 
 /**
  * отображает фигуры на доске, общается с
- * @see Game
+ *
  * @author машуля
+ * @see Game
  */
 public class BoardView extends View {
     private static final float STROKE_WIDTH = 2.0f;
@@ -55,9 +56,9 @@ public class BoardView extends View {
 
     }
 
-    public void setGame(Game g, Date date) {
+    public void setGame(Game g) {
         game = g;
-        game.createGame(getContext(),date);
+//        game.createGame(getContext(), date, gameName, humanPlayer, botPlayer);
     }
 
     public void setColors(int colorDark, int colorLight) {
@@ -102,7 +103,8 @@ public class BoardView extends View {
                             if (game.getBoardDirector().getFigure(c1).getPossiblePositions(game.getBoardDirector()).size() != 0)
                                 hintArray.addAll(game.getBoardDirector().getFigure(c1).getPossiblePositions(game.getBoardDirector()));
                             else
-                                Toast.makeText(getContext(), info.getName(game.getBoardDirector().getFigure(c1)).toString().toLowerCase() + " can't move!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), info.getName(game.getBoardDirector().getFigure(c1)).
+                                        toString().toLowerCase() + " can't move!", Toast.LENGTH_SHORT).show();
 
                         }
                     }
@@ -158,8 +160,7 @@ public class BoardView extends View {
     @Override
     public boolean onTouchEvent(final MotionEvent event) {
         float cellWidth = getWidth() / 9;
-        if (event.getAction() == MotionEvent.ACTION_UP)
-        {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
             int x = (int) (event.getX() / cellWidth) - 1;
             int y = 7 - (int) (event.getY() / cellWidth);
             Cell c = new Cell(x, y);
@@ -176,17 +177,26 @@ public class BoardView extends View {
     }
 
 
-    public void updateView(Cell c) {
-        selection = c;
-        invalidate();
+    public void updateView(Cell c, boolean firstTime) {
+//если не первый раз, отрисовываем обновление на доске
+        if (!firstTime) {
+            selection = c;
+
+                invalidate();
+
+        }
+
+        if (game.getCurrentPlayer().isBot()) {
+            game.moveBot(firstTime);
+
+        }
+        if(game.getCurrentPlayer().isBot())
+            game.moveBot(firstTime);
     }
 
     public void printMessage(String message) {
         //для теста
     }
-    public void lock()
-    {
-        this.setClickable(false);
-    }
+
 }
 

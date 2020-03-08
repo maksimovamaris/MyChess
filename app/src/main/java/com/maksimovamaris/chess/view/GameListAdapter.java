@@ -36,8 +36,13 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.GameLi
 
     public class GameListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView gameTime;
-        private ImageView gameImage;
         private TextView gameTitle;
+        private TextView gameWinner;
+        private TextView player1;
+        private TextView player2;
+        private ImageView gameImage;
+
+
 
         public GameListViewHolder(View v) {
 
@@ -45,6 +50,11 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.GameLi
             gameTime = v.findViewById(R.id.game_time);
             gameImage = v.findViewById(R.id.game_icon);
             gameTitle = v.findViewById(R.id.game_title);
+            gameTitle=v.findViewById(R.id.game_title);
+            gameWinner=v.findViewById(R.id.winner);
+            player1=v.findViewById(R.id.player1);
+            player2=v.findViewById(R.id.player2);
+
 
         }
 
@@ -79,7 +89,21 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.GameLi
                 color = "white";
         } else
             color = gamesDataset.get(position).getTurn().toLowerCase();
-        holder.gameTitle.setText(color + " " + title);
+        holder.gameWinner.setText(color + " " + title);
+        holder.gameTitle.setText(gamesDataset.get(position).getName());
+        if(gamesDataset.get(position).getBot_player().toLowerCase().equals("white"))
+        {holder.player1.setText("Bot");
+        holder.player2.setText(gamesDataset.get(position).getHuman_player());}
+        if(gamesDataset.get(position).getBot_player().toLowerCase().equals("black"))
+        {
+            holder.player2.setText("Bot");
+            holder.player1.setText(gamesDataset.get(position).getHuman_player());
+        }
+        if(gamesDataset.get(position).getBot_player().toLowerCase().equals(""))
+        {
+            holder.player1.setText(gamesDataset.get(position).getHuman_player());
+            holder.player2.setText(gamesDataset.get(position).getHuman_player());
+        }
         holder.gameImage.setBackgroundResource(imageId);
 
     }
