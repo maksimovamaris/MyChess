@@ -18,6 +18,7 @@ import com.maksimovamaris.chess.game.action.GameEndListener;
 import com.maksimovamaris.chess.game.action.GameHelper;
 import com.maksimovamaris.chess.game.action.GameHolder;
 import com.maksimovamaris.chess.game.action.GameLocker;
+import com.maksimovamaris.chess.game.figures.Colors;
 
 
 import java.util.Date;
@@ -67,7 +68,6 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
             case "2":
                 boardView.setColors(getResources().getColor(R.color.cellDarkMint), getResources().getColor(R.color.cellLightMint));
                 break;
-
         }
     }
 
@@ -88,82 +88,90 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
     @Override
     protected void onResume() {
         super.onResume();
+        //в случае восстановления активити
         if (savedDate != null) {
             gameDate = savedDate;
-        } else
-            {
+
+        } else {
             Bundle arguments = getIntent().getExtras();
             if (arguments != null) {
                 gameDate = (Date) (arguments.get(getResources().getString(R.string.key_game)));
                 gameName = (String) (arguments.get(getResources().getString(R.string.game_name)));
-                humanPlayer = (String) (arguments.get(getResources().getString(R.string.human_player)));
-                botPlayer = (String) (arguments.get(getResources().getString(R.string.bot_player)));
 
-//                if (botPlayer.equals(Colors.WHITE.toString()))
-//                {
-//                    player1Text.setText("Bot");
-//                    player2Text.setText(humanPlayer);
-//                }
-//                else
-//                if (botPlayer.equals(Colors.BLACK.toString()))
-//                {player1Text.setText(humanPlayer);
-//                    player2Text.setText("Bot");}
-//                else
-//                {
-//                    player1Text.setText(humanPlayer);
-//                    player2Text.setText(humanPlayer);
-//                }
-
-
+                //получаем из диалога
+                humanPlayer = (String) (arguments.get(getResources().getString(R.string.dialog_human)));
+                botPlayer = (String) (arguments.get(getResources().getString(R.string.dialog_bot)));
+                //если не удалось получить их из диалога, значит мы кликнули на item recyclerView
+                //а там другой ключ у интента
+                if (botPlayer == null || humanPlayer == null) {
+                    humanPlayer = (String) (arguments.get(getResources().getString(R.string.recycler_human)));
+                    botPlayer = (String) (arguments.get(getResources().getString(R.string.recycler_bot)));
+                }
             }
         }
 
-            game.setGameEndListener(this);
-            game.setLocker(this);
-            game.initGame(getBaseContext());
-            if (gameDate == null)
-                game.createGame(gameName, humanPlayer, botPlayer);
-            else
-                game.restoreGame(gameDate);
-            //после того, как игра приобрела нужное состояние,
-            //прикрепляем ее к view
-            game.attachView(boardView);
+        game.setGameEndListener(this);
+        game.setLocker(this);
+        game.initGame(getBaseContext());
+        if (gameDate == null)
+            game.createGame(gameName, humanPlayer, botPlayer);
+        else
+            game.restoreGame(gameDate);
+        //после того, как игра приобрела нужное состояние,
+        //прикрепляем ее к view
+        game.attachView(boardView);
+
+
+        if (botPlayer.equals(Colors.WHITE.toString())) {
+            player1Text.setText("Bot");
+            player2Text.setText(humanPlayer);
+        } else if (botPlayer.equals(Colors.BLACK.toString())) {
+            player1Text.setText(humanPlayer);
+            player2Text.setText("Bot");
+        } else {
+            player1Text.setText(humanPlayer);
+            player2Text.setText(humanPlayer);
         }
 
-        /**
-         * когда пользователь вышел из игры запоминаем,
-         * кто сделал последний ход
-         * чтобы отобразить это в адаптере
-         */
-        @Override
-        protected void onDestroy () {
-            game.updateTurn();
-            super.onDestroy();
-
-        }
-
-        @Override
-        public void endGame (String result){
-            FragmentManager manager = getSupportFragmentManager();
-            GameEndDialog gameEndDialog = new GameEndDialog();
-            Bundle bundle = new Bundle();
-            bundle.putString(getResources().getString(R.string.game_result), result);
-            gameEndDialog.setArguments(bundle);
-            gameEndDialog.setGameNotationListener(new GameHelper(getApplicationContext()));
-            gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
-        }
-
-        /**
-         * для бота
-         */
-        @Override
-        public void lock () {
-            lockView.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        public void unlock () {
-            lockView.setVisibility(View.GONE);
-        }
     }
+
+    /**
+     * когда пользователь вышел из игры запоминаем,
+     * кто сделал последний ход
+     * чтобы отобразить это в адаптере
+     */
+    @Override
+    protected void onDestroy() {
+        game.updateTurn();
+
+//        FragmentManager fm = getCallingActivity().getSupportFragmentManager();
+//        fm .popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        super.onDestroy();
+
+    }
+
+    @Override
+    public void endGame(String result) {
+        FragmentManager manager = getSupportFragmentManager();
+        GameEndDialog gameEndDialog = new GameEndDialog();
+        Bundle bundle = new Bundle();
+        bundle.putString(getResources().getString(R.string.game_result), result);
+        gameEndDialog.setArguments(bundle);
+        gameEndDialog.setGameNotationListener(new GameHelper(getApplicationContext()));
+        gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
+    }
+
+    /**
+     * для бота
+     */
+    @Override
+    public void lock() {
+        lockView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void unlock() {
+        lockView.setVisibility(View.GONE);
+    }
+}
 

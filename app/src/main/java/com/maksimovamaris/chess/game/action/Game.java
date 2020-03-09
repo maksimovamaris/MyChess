@@ -334,8 +334,7 @@ public class Game {
      */
     private Double selectBestMove(List<List<Cell>> moves, boolean virtualOpponent) {
         List<Double> opponentScore = new ArrayList<>();
-
-            for (List<Cell> l : moves) {
+        for (List<Cell> l : moves) {
                 //перед каждым ходом проверяем, нужно ли просчитывать на ход вперед или нет
                 this.virtualOpponent = virtualOpponent;
                 ChessFigure savedFigure = boardDirector.getFigure(l.get(1));
@@ -347,7 +346,7 @@ public class Game {
                         changePlayer();
                         updateGame(l.get(1), l.get(0));
                         boardDirector.restoreFigure(savedFigure, l.get(1));
-                        double mateScore = 900.0;
+                        double mateScore = 900;
                         return mateScore;
                     }
                 } else if (checkDraw()) {
@@ -392,12 +391,14 @@ public class Game {
     }
 
     public void moveBot(boolean firstMove) {
-        Log.d("1 time", "moveBot() called with: firstMove = [" + firstMove + "]");
         locker.lock();
         runner.runInBackground(() -> {
             //если первый ход, то получаем ходы для бота через checkDraw()
             if (firstMove)
                 checkDraw();
+
+            Log.d("current BOT", "" + getCurrentPlayer().isBot() + "]");
+
             //достаем лучший ход по ключу - оптимальным очкам
             botPlays = true;
             List<Cell> bestMove = weightedMoves.get(selectBestMove(bot_rescue, true));
@@ -405,17 +406,22 @@ public class Game {
             //запишем ход бота в базу данных
             boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(bestMove.get(0))).toString(),
                     bestMove.get(0), bestMove.get(1));
-            changePlayer();
+
+//            changePlayer();
+
             //сделаем финальное обновление игры
             updateGame(bestMove.get(0), bestMove.get(1));
             //очищаем ходы бота
             weightedMoves.clear();
             bot_rescue.clear();
+            opponent_rescue.clear();
             botPlays = false;
             virtualOpponent = false;
             runner.runOnMain(() -> {
                 locker.unlock();
-                notifyView(null, false);
+                if(getCurrentPlayer().isBot())
+                    changePlayer();
+               notifyView(null, false);
                 if (isMate != null) {
                     Log.d("MATE", "moveBot() called with: firstMove = [" + firstMove + "]");
                     locker.lock();

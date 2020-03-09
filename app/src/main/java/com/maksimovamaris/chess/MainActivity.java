@@ -28,15 +28,22 @@ import com.maksimovamaris.chess.view.games.GameStartDialog;
 
 public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
-
+    private GameStartDialog gameStartDialog;
     private FloatingActionButton addGameBut;
-
+    private FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+//ликвидируем диалогфрагмент если мы вернулись в активность
+        //из игры
+        fragmentManager = getSupportFragmentManager();
+        GameStartDialog prev = (GameStartDialog) (getSupportFragmentManager().findFragmentByTag(getResources().getString(R.string.tag_start_game)));
+        if (prev != null) {
+            prev.dismiss();
+        }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -44,8 +51,7 @@ public class MainActivity extends AppCompatActivity {
         addGameBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                GameStartDialog gameStartDialog = new GameStartDialog();
+                gameStartDialog = new GameStartDialog();
                 gameStartDialog.show(fragmentManager, getResources().getString(R.string.tag_start_game));
             }
         });
@@ -93,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
+        Log.d("MainActivity", "onStart() called");
         super.onStart();
     }
-
 }
 

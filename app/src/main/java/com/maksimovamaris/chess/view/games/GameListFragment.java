@@ -2,7 +2,6 @@ package com.maksimovamaris.chess.view.games;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import android.view.LayoutInflater;
 
@@ -73,6 +72,8 @@ public class GameListFragment extends Fragment {
             public void onClick(View view, final int position) {
                 Intent intent = new Intent(getContext(), GameActivity.class);
                 intent.putExtra(getString(R.string.key_game), gameData.getValue().get(position).getGame_date());
+                intent.putExtra(getString(R.string.recycler_human),gameData.getValue().get(position).getHuman_player());
+                intent.putExtra(getString(R.string.recycler_bot),gameData.getValue().get(position).getBot_player());
                 startActivity(intent);
             }
 
@@ -98,7 +99,6 @@ public class GameListFragment extends Fragment {
             gameData.observe(getViewLifecycleOwner(), new Observer<List<GameData>>() {
                 @Override
                 public void onChanged(List<GameData> gamesList) {
-                    Log.d("Games", "size() = " + gamesList.size());
                     if (gamesList.size() == 0) {
                         noGames.setVisibility(View.VISIBLE);
                         noGames.setText(getResources().getString(R.string.no_games));

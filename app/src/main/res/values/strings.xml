@@ -48,9 +48,11 @@
     <string name="tag_start_game">STARTGAME</string>
     <string name="button_play">play</string>
     <string name="game_name">GAMENAME</string>
-    <string name="human_player">HUMANPLAYER</string>
-    <string name="bot_player">BOTPLAYER</string>
+    <string name="dialog_human">HUMANPLAYER</string>
+    <string name="dialog_bot">BOTPLAYER</string>
     <string name="vs">VS</string>
+    <string name="recycler_human">PLAYER1</string>
+    <string name="recycler_bot">PLAYER2</string>
 
 
 </resources>

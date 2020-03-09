@@ -57,6 +57,14 @@ public class BoardDirector {
         this.humanPlayer = humanPlayer;
     }
 
+    public String getBotPlayer() {
+        return botPlayer;
+    }
+
+    public String getHumanPlayer() {
+        return humanPlayer;
+    }
+
     public Date getDate() {
         return date;
     }
