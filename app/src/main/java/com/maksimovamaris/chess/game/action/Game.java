@@ -1,15 +1,15 @@
 package com.maksimovamaris.chess.game.action;
 
 import android.content.Context;
-
-import android.util.Log;
 import android.widget.Toast;
-
 
 import com.maksimovamaris.chess.game.figures.Bishop;
 import com.maksimovamaris.chess.game.figures.ChessFigure;
 import com.maksimovamaris.chess.game.figures.FigureInfo;
+import com.maksimovamaris.chess.game.figures.King;
 import com.maksimovamaris.chess.game.figures.Knight;
+import com.maksimovamaris.chess.game.figures.Pawn;
+import com.maksimovamaris.chess.game.figures.Rook;
 import com.maksimovamaris.chess.utils.Runner;
 import com.maksimovamaris.chess.game.figures.Colors;
 import com.maksimovamaris.chess.view.games.BoardView;
@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
 
 /**
  * @author машуля
@@ -35,6 +36,7 @@ public class Game {
     private Player mPlayer2;
     private Player currentPlayer;
     private BoardDirector boardDirector;
+    private BoardDirector copy;
     private BoardView boardView;
     private Runner runner;
     private Boolean isMate;
@@ -43,15 +45,18 @@ public class Game {
     private boolean notation;
     private GameEndListener gameEndListener;
     private GameLocker locker;
+    private FigureChoiceListener figureChoiceListener;
     private List<List<Cell>> bot_rescue;
     private List<List<Cell>> opponent_rescue;
     private boolean botPlays;
     private boolean virtualOpponent;
     private HashMap<Double, List<Cell>> weightedMoves;
-
+    private List<Cell> hints;
+    //сохраняем для хода пешки
+    private Cell selection;
+    private Cell movingPoint;
 
     public Game(Runner runner) {
-
         this.runner = runner;
     }
 
@@ -79,9 +84,12 @@ public class Game {
         isDraw = null;
         attack = null;
         botPlays = false;
+        selection = null;
+        movingPoint = null;
         virtualOpponent = false;
         bot_rescue = new ArrayList<>();
         opponent_rescue = new ArrayList<>();
+        hints = new ArrayList<>();
         weightedMoves = new HashMap<>();
         boardDirector = new BoardDirector(context);
         boardDirector.startGame();
@@ -106,7 +114,7 @@ public class Game {
         });
         runner.runOnMain(() -> {
             createPlayers(botPlayer);
-            notifyView(null, true);
+            notifyView(null, true, boardDirector);
         });
 
     }
@@ -130,7 +138,7 @@ public class Game {
                 //если король в опасности, оповещаем об этом шахом
                 if (!kingProtected(getKingPos()))
                     Toast.makeText(boardView.getContext(), "Check!", Toast.LENGTH_SHORT).show();
-                notifyView(null, false);
+                notifyView(null, false, boardDirector);
             });
 
         });
@@ -144,12 +152,16 @@ public class Game {
         this.gameEndListener = gameEndListener;
     }
 
+    public void setFigureChoiceListener(FigureChoiceListener figureChoiceListener) {
+        this.figureChoiceListener = figureChoiceListener;
+    }
+
     public void setNotation(boolean notation) {
         this.notation = notation;
     }
 
     public BoardDirector getBoardDirector() {
-            return boardDirector;
+        return boardDirector;
     }
 
     public void changePlayer() {
@@ -181,11 +193,8 @@ public class Game {
      * @return возвращает позицию короля текущего игрока
      */
     private Cell getKingPos() {
-
-        if (this.getCurrentPlayer().getColor() == Colors.BLACK)
-            return boardDirector.blackKingPos;
-        else
-            return boardDirector.whiteKingPos;
+        return (new FigureInfo().getPosition
+                (boardDirector.kings.get(getCurrentPlayer().getColor())));
     }
 
     /**
@@ -193,129 +202,68 @@ public class Game {
      */
     boolean kingProtected(Cell kingPos) {
         for (int i = 0; i < 8; i++)
-            for (int j = 0; j < 8; j++)
-                //сначала проверяем что ячейка не пуста
+            for (int j = 0; j < 8; j++) { //сначала проверяем что ячейка не пуста
                 if ((boardDirector.getFigure(new Cell(i, j)) != null) &&
                         //проверяем что фигура не того же цвета, что король
                         (new FigureInfo().getColor(boardDirector.getFigure(new Cell(i, j))) !=
                                 //именно getKingPos() потому что в kingPos короля может не быть, а мы только предполагаем, что он там есть
                                 new FigureInfo().getColor(boardDirector.getFigure(getKingPos()))) &&
+                        //что фигура не пешка
+                        (!(boardDirector.getFigure(new Cell(i, j)) instanceof Pawn)) &&
                         //проверяем что фигура может сходить на место короля
                         (checkFigure(new Cell(i, j), kingPos))) {
                     //если все условия выполнены, заходим сюда
                     attack = new Cell(i, j);
                     return false;
-                }
+                } else
+                    //если это пешка
+                    if ((boardDirector.getFigure(new Cell(i, j)) instanceof Pawn)
+                            //не того же цвета что король
+                            && (new FigureInfo().getColor(boardDirector.getFigure(new Cell(i, j))) !=
+                            new FigureInfo().getColor(boardDirector.getFigure(getKingPos())))
+                            //стоит по диагонали и может "убить" короля
+                            &&
+                            (Math.abs(i - kingPos.getX()) == 1) && (Math.abs(j - kingPos.getY()) == 1) &&
+                            //связано с направлением, по которому пешка может взять фигуру
+                            ((j - kingPos.getY()) == getCurrentPlayer().getColor().getI())) {
+                        attack = new Cell(i, j);
+                        return false;
+                    }
+            }
         return true;
     }
 
 
     /**
      * посредник между игрой и view
-     * проверка хода отдельной фигуры с анализом ситуации на доске
      * проверяет ход живого игрока
      *
      * @param c0 откуда ходим
-     * @param c1 куда ходим
      */
-    void checkMove(Cell c0, Cell c1) {
-        runner.runInBackground(() -> {
-            ChessFigure savedFigure;
-            if (checkFigure(c0, c1)) {
-                savedFigure = boardDirector.getFigure(c1);//прихраняем то что есть в с1
-                updateGame(c0, c1);
-                //если король защищен
-                if (kingProtected(getKingPos())) {
-                    // запись хода
-                    //фигура, стоявшая в с0, УЖЕ переместилась в с1 - ее имя берем из с1
-                    boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(c1)).toString(), c0, c1);
-                    changePlayer();
-                    isMate = null;
-                    isDraw = null;
-                    attack = null;
-
-                    // поменяли игрока, проверка противника на шах/мат
-                    //если король противника попал под шах после хода
-                    if (!kingProtected(getKingPos())) {
-                        //проверяем на мат
-                        isMate = checkMate(attack);
-                        //если определен мат
-                        if (isMate) {
-                            try {
-
-                                runner.runOnMain(() -> {
-                                    notifyView(null, false);
-                                    locker.lock();
-                                    detachView();
-                                    gameEndListener.endGame("Mate!");
-                                });
-
-
-                            } catch (NullPointerException e) {
-                                boardView.printMessage("Mate!");
-                            }
-                        }
-                        //иначе только шах
-                        else {
-                            try {
-                                runner.runOnMain(() -> Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show());
-                            } catch (NullPointerException e) {
-                                boardView.printMessage("Check!");
-                            }
-                        }
-                    }
-                    //если все хорошо, проверяем на ничью
-                    else {
-                        if (checkDraw()) {
-                            try {
-                                runner.runOnMain(() -> {
-                                    locker.lock();
-                                    detachView();
-                                    gameEndListener.endGame("Draw");
-                                });
-
-                            } catch (NullPointerException e) {
-                                boardView.printMessage("Draw");
-                            }
-                        }
-                    }
-
-                    //наконец, обновляем вьюху
-                    runner.runOnMain(() -> {
-                        try {
-
-                            synchronized (boardDirector) {
-                                notifyView(null, false);
-                                //внутри метода заходим во view и отрисовываем ее заново
-
-                            }
-
-
-                        } catch (NullPointerException e) {
-                            Log.d("For Test", "checkMove() called with: c0 = [" + c0 + "], c1 = [" + c1 + "]");
-                        }
-                    });
-
-                } else {
-                    //откатываемся обратно, король в опасности
-                    updateGame(c1, c0);
-                    boardDirector.restoreFigure(savedFigure, c1);
-                    try {
-                        runner.runOnMain(() ->
-                                Toast.makeText(boardView.getContext(), "Protect your king!", Toast.LENGTH_SHORT).show());
-                    } catch (NullPointerException e) {
-                        boardView.printMessage("Protect your king!");
-                    }
-                }
-            } else {
-                try {
-                    runner.runOnMain(() ->
-                            Toast.makeText(boardView.getContext(), "Incorrect move", Toast.LENGTH_SHORT).show());
-                } catch (NullPointerException e) {
-                    boardView.printMessage("Incorrect move");
-                }
+    void setHints(Cell c0) {
+        List<Cell> hints = new ArrayList<>();
+        if (c0 != null)
+            for (Cell c1 : boardDirector.getFigure(c0).getPossiblePositions(boardDirector)) {
+                if (canMove(c0, c1))
+                    hints.add(c1);
             }
-        });
+        this.hints = hints;
+
+
+        //если король был выбран
+        if ((boardDirector.getFigure(c0) instanceof King) &&
+                //и не двигался
+                ((!((King) (boardDirector.getFigure(c0))).isMoved()))) {
+            if
+                //проверяем короткую
+            (checkCastling(6, 7))
+                this.hints.add(new Cell(6, getKingPos().getY()));
+//            и длинную рокировки
+            if (
+                    checkCastling(2, 0))
+                this.hints.add(new Cell(2, getKingPos().getY()));
+        }
+
     }
 
 
@@ -335,59 +283,59 @@ public class Game {
     private Double selectBestMove(List<List<Cell>> moves, boolean virtualOpponent) {
         List<Double> opponentScore = new ArrayList<>();
         for (List<Cell> l : moves) {
-                //перед каждым ходом проверяем, нужно ли просчитывать на ход вперед или нет
-                this.virtualOpponent = virtualOpponent;
-                ChessFigure savedFigure = boardDirector.getFigure(l.get(1));
-                changePlayer();
-                updateGame(l.get(0), l.get(1));
-                if (!kingProtected(getKingPos())) {
-                    isMate = checkMate(attack);
-                    if (isMate) {
-                        changePlayer();
-                        updateGame(l.get(1), l.get(0));
-                        boardDirector.restoreFigure(savedFigure, l.get(1));
-                        double mateScore = 900;
-                        return mateScore;
-                    }
-                } else if (checkDraw()) {
-                    isDraw = true;
+            //перед каждым ходом проверяем, нужно ли просчитывать на ход вперед или нет
+            this.virtualOpponent = virtualOpponent;
+            ChessFigure savedFigure = boardDirector.getFigure(l.get(1));
+            changePlayer();
+            updateGame(l.get(0), l.get(1), null);
+            if (!kingProtected(getKingPos())) {
+                isMate = checkMate(attack);
+                if (isMate) {
                     changePlayer();
-                    updateGame(l.get(1), l.get(0));
-                    double drawScore = 800;
-                    return drawScore;
-                } else {
-                    //если мы не считали xод за противника
-                    if (virtualOpponent) {
-                        //посчитаем ход за противника
-                        //сумму очков за сделанный ход и "лучший", по нашим критериям, ход противника
-                        weightedMoves.put(boardDirector.score +
-                                selectBestMove(opponent_rescue, false), l);
-                        opponent_rescue.clear();
-                    } else
-                    //если мы как раз считаем за противника
-                    {
-                        opponentScore.add(boardDirector.score);
-                    }
+                    updateGame(l.get(1), l.get(0), null);
+                    boardDirector.restoreFigure(savedFigure, l.get(1));
+                    double mateScore = 900;
+                    return mateScore;
                 }
-                //после каждого просчитанного вперед хода откатываемся обратно
+            } else if (checkDraw()) {
+                isDraw = true;
                 changePlayer();
-                updateGame(l.get(1), l.get(0));
-                boardDirector.restoreFigure(savedFigure, l.get(1));
-                isDraw = isMate = null;
-            }
-            //если считаем за противника
-            if (!virtualOpponent) {
-                if (getCurrentPlayer().getColor() == Colors.WHITE)
-                    return Collections.max(opponentScore);
-                else
-                    return Collections.min(opponentScore);
+                updateGame(l.get(1), l.get(0), null);
+                double drawScore = 800;
+                return drawScore;
             } else {
-
-                if (getCurrentPlayer().getColor() == Colors.WHITE)
-                    return (Collections.max(weightedMoves.keySet()));
-                else
-                    return (Collections.min(weightedMoves.keySet()));
+                //если мы не считали xод за противника
+                if (virtualOpponent) {
+                    //посчитаем ход за противника
+                    //сумму очков за сделанный ход и "лучший", по нашим критериям, ход противника
+                    weightedMoves.put(boardDirector.score +
+                            selectBestMove(opponent_rescue, false), l);
+                    opponent_rescue.clear();
+                } else
+                //если мы как раз считаем за противника
+                {
+                    opponentScore.add(boardDirector.score);
+                }
             }
+            //после каждого просчитанного вперед хода откатываемся обратно
+            changePlayer();
+            updateGame(l.get(1), l.get(0), null);
+            boardDirector.restoreFigure(savedFigure, l.get(1));
+            isDraw = isMate = null;
+        }
+        //если считаем за противника
+        if (!virtualOpponent) {
+            if (getCurrentPlayer().getColor() == Colors.WHITE)
+                return Collections.max(opponentScore);
+            else
+                return Collections.min(opponentScore);
+        } else {
+
+            if (getCurrentPlayer().getColor() == Colors.WHITE)
+                return (Collections.max(weightedMoves.keySet()));
+            else
+                return (Collections.min(weightedMoves.keySet()));
+        }
     }
 
     public void moveBot(boolean firstMove) {
@@ -396,21 +344,15 @@ public class Game {
             //если первый ход, то получаем ходы для бота через checkDraw()
             if (firstMove)
                 checkDraw();
-
-            Log.d("current BOT", "" + getCurrentPlayer().isBot() + "]");
-
             //достаем лучший ход по ключу - оптимальным очкам
             botPlays = true;
             List<Cell> bestMove = weightedMoves.get(selectBestMove(bot_rescue, true));
             //выберем ход для бота
             //запишем ход бота в базу данных
             boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(bestMove.get(0))).toString(),
-                    bestMove.get(0), bestMove.get(1));
-
-//            changePlayer();
-
+                    bestMove.get(0), bestMove.get(1), "");
             //сделаем финальное обновление игры
-            updateGame(bestMove.get(0), bestMove.get(1));
+            updateGame(bestMove.get(0), bestMove.get(1), null);
             //очищаем ходы бота
             weightedMoves.clear();
             bot_rescue.clear();
@@ -419,18 +361,14 @@ public class Game {
             virtualOpponent = false;
             runner.runOnMain(() -> {
                 locker.unlock();
-                if(getCurrentPlayer().isBot())
+                if (getCurrentPlayer().isBot())
                     changePlayer();
-               notifyView(null, false);
+                notifyView(null, false, boardDirector);
                 if (isMate != null) {
-                    Log.d("MATE", "moveBot() called with: firstMove = [" + firstMove + "]");
                     locker.lock();
-                    detachView();
                     gameEndListener.endGame("Mate!");
                 } else if (isDraw != null) {
-                    Log.d("DRAW", "moveBot() called with: firstMove = [" + firstMove + "]");
                     locker.lock();
-                    detachView();
                     gameEndListener.endGame("Draw");
                 }
             });
@@ -519,15 +457,15 @@ public class Game {
         {
             ChessFigure savedFigure = boardDirector.getFigure(c1);
             //обновляем игру
-            updateGame(c0, c1);
+            updateGame(c0, c1, null);
             //если король после данного хода защищен
             if (kingProtected(getKingPos())) {
                 //все ок, мата нет, так ходить можно
-                updateGame(c1, c0);
+                updateGame(c1, c0, null);
                 boardDirector.restoreFigure(savedFigure, c1);
                 return true;
             }
-            updateGame(c1, c0);
+            updateGame(c1, c0, null);
             boardDirector.restoreFigure(savedFigure, c1);
         }
         return false;
@@ -616,8 +554,8 @@ public class Game {
      * вызывается метод класса
      * boardDirector.updateBoard()
      */
-    public void updateGame(Cell c0, Cell c1) {
-        boardDirector.updateBoard(c0, c1);
+    public void updateGame(Cell c0, Cell c1, ChessFigure newFigure) {
+        boardDirector.updateBoard(c0, c1, newFigure);
     }
 
 
@@ -627,39 +565,130 @@ public class Game {
         if (boardDirector.getFigure(c) != null) {
             if (info.getColor(boardDirector.getFigure(c)) == getCurrentPlayer().getColor())
             //если фигура того же цвета, что игрок
-            //обновляем подсказки
+            // обновляем подсказки
             {
+                copy = boardDirector;
+                boardDirector = copy;
+                runner.runInBackground(() -> {
 
-                notifyView(c, false);
-
+                    setHints(c);
+                    runner.runOnMain(() -> {
+                        notifyView(c, false, copy);
+                    });
+                });
+                return;
             } else //если фигуры разного цвета
             {
-                if (selection != null)//была ли выбрана фигура, которой ходим
+                if (selection == null) //не была выбрана фигура, которой ходим
                 {
-                    checkMove(selection, c);
-
-                } else
-                    try {
-                        Toast.makeText(boardView.getContext(), "Don't touch your opponent's figures!", Toast.LENGTH_SHORT).show();
-                    } catch (NullPointerException e) {
-                        boardView.printMessage("Don't touch your opponent's figures!");
-                    }
-            }
-        } else {
-            if (selection != null)//если до этого было что-то выбрано
-            {
-                //проверяем ход на корректность
-                checkMove(selection, c);
-
-            } else //если ничего не выбрано
-            {
-                try {
-                    Toast.makeText(boardView.getContext(), "First choose a figure to move", Toast.LENGTH_SHORT).show();
-                } catch (NullPointerException e) {
-                    boardView.printMessage("First choose a figure to move");
+                    Toast.makeText(boardView.getContext(), "Don't touch your opponent's figures!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
             }
+        } else {
+            if (selection == null)// если ничего не выбрано
+            {
+                Toast.makeText(boardView.getContext(), "First choose a figure to move", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
+        if (hints.contains(c)) {
+
+            //если это пешка и она дошла до крайней клетки доски
+            if ((boardDirector.getFigure(selection) instanceof Pawn) && (c.getY() == 7 || c.getY() == 0)) {
+                //сохраняем координаты хода
+                this.selection = selection;
+                this.movingPoint = c;
+                //показываем диалог выбора фигуры
+                figureChoiceListener.onChoiceStarted();
+                return;
+            } else
+                processMove(selection, c, null);
+        } else
+            Toast.makeText(boardView.getContext(), "Incorrect move", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Изменяет игру в соотвествии с совершенным ходом
+     *
+     * @param c0 откуда
+     * @param c1 куда
+     */
+    private void processMove(Cell c0, Cell c1, ChessFigure savedFigure) {
+        updateGame(c0, c1, savedFigure);
+        //сохраняем копию на директор, и ее передаем во вью
+
+//        BoardDirector d = boardDirector;
+//        boardDirector = d;
+
+
+        //даже в случае рокировки сохраняется только 1 ход,
+        // чтобы не было путаницы с очередью игрока, которая считается
+        //исходя из
+        //количества ходов
+        runner.runInBackground(() ->
+        {
+            //смотрим, кто пошел в с1, если это король или ладья, отмечаем что они уже ходили
+            boardDirector.updateMoves(c1);
+            // запись хода
+            //фигура, стоявшая в с0, УЖЕ переместилась в с1 - ее имя берем из с1
+
+            String name = "";
+            if (savedFigure != null)
+                name = new FigureInfo().getName(savedFigure).toString();
+
+            boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(c1)).toString(), c0, c1, name);
+            changePlayer();
+            isMate = null;
+            isDraw = null;
+            attack = null;
+
+            // поменяли игрока, проверка противника на шах/мат
+            //если король противника попал под шах после хода
+            if (!kingProtected(getKingPos())) {
+                //проверяем на мат
+                isMate = checkMate(attack);
+                //если определен мат
+                if (isMate) {
+                    runner.runOnMain(() -> {
+                        notifyView(null, false, copy);
+//                        locker.lock();
+                        gameEndListener.endGame("Mate!");
+
+                    });
+                }
+                //иначе только шах
+                else {
+
+                    runner.runOnMain(() -> Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show());
+                }
+            }
+            //если все хорошо, проверяем на ничью
+            else {
+                if (checkDraw()) {
+                    runner.runOnMain(() -> {
+                        notifyView(null, false, boardDirector);
+//                        locker.lock();
+                        gameEndListener.endGame("Draw");
+                    });
+                } else {
+                    runner.runOnMain(() -> {
+                        notifyView(null, false, copy);
+
+                    });
+
+                }
+            }
+        });
+    }
+
+    public void pawnTurning(String figureName) {
+        ChessFigure newFigure = boardDirector.pawnTurning(figureName,
+                getCurrentPlayer().getColor(), movingPoint);
+        //фиксируем ход
+        processMove(selection, movingPoint, newFigure);
+        //обнуляем сохраненные значения
+        movingPoint = selection = null;
     }
 
     public void updateTurn() {
@@ -703,12 +732,47 @@ public class Game {
      * для
      * @see BoardView
      */
-    private void notifyView(Cell c, boolean firstTime) {
-
-        boardView.updateView(c, firstTime);
+    private void notifyView(Cell c, boolean firstTime, BoardDirector director) {
+        if (c == null)
+            hints.clear();
+        boardView.updateView(c, hints, firstTime, director);
 
     }
 
+    /**
+     * рокировку можно делать
+     * если король и ладья находились без движения
+     * + если ни одно поле, которое проходит король,
+     * не окажется под шахом
+     *
+     * @param kingX - предполагаемая позиция короля после рокировки
+     * @param rookX - позиция рокируемой ладьи до рокировки
+     * @return можно ли сделать рокировку в указанную сторону
+     */
+    private boolean checkCastling(int kingX, int rookX) {
+        int y = getKingPos().getY();
+        //если в углу стоит ладья и она не двигалась
+        if ((boardDirector.getFigure(new Cell(rookX, y)) instanceof Rook) &&
+                (!((Rook) (boardDirector.getFigure(new Cell(rookX, y)))).isMoved())) {
+
+            //проверим, пусто ли между предполагаемой позицией короля и ладьей
+            for (int i = Math.min(rookX, kingX); i <= Math.max(kingX, rookX); i++)
+                if ((i != rookX) && (boardDirector.getFigure(new Cell(i, y)) != null))
+                    return false;
+
+            //проверим, пусто ли между текущей и предполагагемой
+            //позициями короля
+            // и безопасно ли выполнять рокировку
+            for (int i = Math.min(getKingPos().getX(), kingX); i <= Math.max(kingX, getKingPos().getX()); i++) {
+                //если король окажется под шахом на линии, рокировку делать нельзя
+                if (((i != (getKingPos().getX())) && (boardDirector.getFigure(new Cell(i, y)) != null)) || !kingProtected(new Cell(i, y)))
+                    return false;
+            }
+        } else
+            return false;
+
+        return true;
+    }
 
 }
 //еще не реализована рокировка, взятие на проходе, преврашение пешки

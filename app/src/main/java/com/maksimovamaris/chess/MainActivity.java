@@ -37,13 +37,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//ликвидируем диалогфрагмент если мы вернулись в активность
-        //из игры
+
         fragmentManager = getSupportFragmentManager();
-        GameStartDialog prev = (GameStartDialog) (getSupportFragmentManager().findFragmentByTag(getResources().getString(R.string.tag_start_game)));
-        if (prev != null) {
-            prev.dismiss();
-        }
+
+//        GameStartDialog prev = (GameStartDialog) (getSupportFragmentManager().findFragmentByTag(getResources().getString(R.string.tag_start_game)));
+//        if (prev != null) {
+//            prev.dismiss();
+//        }
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

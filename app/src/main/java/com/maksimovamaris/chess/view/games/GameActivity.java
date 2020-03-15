@@ -2,17 +2,18 @@ package com.maksimovamaris.chess.view.games;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.DateConverter;
+import com.maksimovamaris.chess.game.action.FigureChoiceListener;
 import com.maksimovamaris.chess.game.action.Game;
 import com.maksimovamaris.chess.game.action.GameEndListener;
 import com.maksimovamaris.chess.game.action.GameHelper;
@@ -23,7 +24,7 @@ import com.maksimovamaris.chess.game.figures.Colors;
 
 import java.util.Date;
 
-public class GameActivity extends AppCompatActivity implements GameEndListener, GameLocker {
+public class GameActivity extends AppCompatActivity implements FigureChoiceListener, GameEndListener, GameLocker {
 
     private BoardView boardView;
     private Game game;
@@ -75,14 +76,17 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
-        state.putLong(getResources().getString(R.string.key_save_gameState), (new DateConverter()).fromDate(game.getBoardDirector().getDate()));
+        state.putLong(getResources().getString(R.string.key_save_gameDate), (new DateConverter()).fromDate(game.getBoardDirector().getDate()));
+        state.putString(getString(R.string.key_save_gameHuman), player1Text.getText().toString());
+        state.putString(getResources().getString(R.string.key_save_gameBot), player2Text.getText().toString());
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        savedDate = new DateConverter().toDate(savedInstanceState.getLong(getResources().getString(R.string.key_save_gameState)));
-
+        savedDate = new DateConverter().toDate(savedInstanceState.getLong(getResources().getString(R.string.key_save_gameDate)));
+        humanPlayer = savedInstanceState.getString(getResources().getString(R.string.key_save_gameHuman));
+        botPlayer = savedInstanceState.getString(getResources().getString(R.string.key_save_gameBot));
     }
 
     @Override
@@ -95,7 +99,8 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
         } else {
             Bundle arguments = getIntent().getExtras();
             if (arguments != null) {
-                gameDate = (Date) (arguments.get(getResources().getString(R.string.key_game)));
+
+                gameDate = (Date) (arguments.get(getResources().getString(R.string.game_date)));
                 gameName = (String) (arguments.get(getResources().getString(R.string.game_name)));
 
                 //получаем из диалога
@@ -112,6 +117,7 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
 
         game.setGameEndListener(this);
         game.setLocker(this);
+        game.setFigureChoiceListener(this);
         game.initGame(getBaseContext());
         if (gameDate == null)
             game.createGame(gameName, humanPlayer, botPlayer);
@@ -119,7 +125,12 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
             game.restoreGame(gameDate);
         //после того, как игра приобрела нужное состояние,
         //прикрепляем ее к view
+
         game.attachView(boardView);
+        if (botPlayer == null || humanPlayer == null) {
+            botPlayer = game.getBoardDirector().getBotPlayer();
+            humanPlayer = game.getBoardDirector().getHumanPlayer();
+        }
 
 
         if (botPlayer.equals(Colors.WHITE.toString())) {
@@ -133,6 +144,7 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
             player2Text.setText(humanPlayer);
         }
 
+
     }
 
     /**
@@ -143,9 +155,6 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
     @Override
     protected void onDestroy() {
         game.updateTurn();
-
-//        FragmentManager fm = getCallingActivity().getSupportFragmentManager();
-//        fm .popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         super.onDestroy();
 
     }
@@ -159,6 +168,8 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
         gameEndDialog.setArguments(bundle);
         gameEndDialog.setGameNotationListener(new GameHelper(getApplicationContext()));
         gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
+        game.detachView();
+//        gameEndDialog.setCanceledOnTouchOutside(false);
     }
 
     /**
@@ -172,6 +183,18 @@ public class GameActivity extends AppCompatActivity implements GameEndListener, 
     @Override
     public void unlock() {
         lockView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onChoiceStarted() {
+        FragmentManager manager = getSupportFragmentManager();
+        FigureChoiceDialog dialog = new FigureChoiceDialog();
+        dialog.show(manager, getResources().getString(R.string.choice_dialog));
+    }
+
+    @Override
+    public void onChoiceMade(String figureName) {
+        game.pawnTurning(figureName);
     }
 }
 

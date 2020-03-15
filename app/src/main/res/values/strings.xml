@@ -27,8 +27,8 @@
     <string name="game_title">Game</string>
     <string name="collapsing_toolbar_title">Welcome!</string>
     <string name="key_notation">NOTATION_FOR_DATE</string>
-    <string name="key_game">GAME_FOR_DATE</string>
-    <string name="key_save_gameState">SAVE</string>
+    <string name="game_date">GAME_FOR_DATE</string>
+    <string name="key_save_gameDate">SAVE</string>
     <string name="exit_game">Exit</string>
     <string name="game_result">RESULT</string>
     <string name="dialog_show">SHOW</string>
@@ -53,6 +53,9 @@
     <string name="vs">VS</string>
     <string name="recycler_human">PLAYER1</string>
     <string name="recycler_bot">PLAYER2</string>
+    <string name="choice_dialog">CHOICESHOWN</string>
+    <string name="key_save_gameHuman">HUMANSAVED</string>
+    <string name="key_save_gameBot">BOTSAVED</string>
 
 
 </resources>

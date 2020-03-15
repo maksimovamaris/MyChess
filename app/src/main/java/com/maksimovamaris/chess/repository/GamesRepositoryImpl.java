@@ -1,7 +1,5 @@
 package com.maksimovamaris.chess.repository;
 
-import android.util.Log;
-
 import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 
@@ -16,7 +14,6 @@ import java.util.List;
 
 public class GamesRepositoryImpl implements GamesRepository {
     private GamesDataBase gamesDataBase;
-
     public GamesRepositoryImpl(GamesDataBase dataBase) {
         gamesDataBase = dataBase;
     }
@@ -47,14 +44,16 @@ public class GamesRepositoryImpl implements GamesRepository {
         return gamesDataBase.getGameDao().getGameOrRecord(isRecord);
     }
 
+    @Override
     @WorkerThread
-    public MoveData addMove(String figureName, Cell c0, Cell c1, Date gameDate) {
+    public MoveData addMove(String figureName, Cell c0, Cell c1, String savedFigureName,Date gameDate) {
         MoveData moveData = new MoveData();
-        moveData.setFigire_name(figureName);
+        moveData.setFigireName(figureName);
         moveData.setX0(c0.getX());
         moveData.setY0(c0.getY());
         moveData.setX1(c1.getX());
         moveData.setY1(c1.getY());
+        moveData.setNewFigureName(savedFigureName);
         moveData.setGameDate(gameDate);
         gamesDataBase.getGameDao().addMove(moveData);
         return moveData;
@@ -79,6 +78,8 @@ public class GamesRepositoryImpl implements GamesRepository {
         return moveData;
     }
 
+    @Override
+    @WorkerThread
     public GameData getGameByDate(Date date) {
         return gamesDataBase.getGameDao().getGameForDate(date);
     }

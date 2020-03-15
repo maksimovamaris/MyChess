@@ -46,22 +46,22 @@
             android:id="@+id/game_icon"
             android:layout_width="48dp"
             android:layout_height="46dp"
+            android:layout_marginTop="@dimen/default_margin"
             android:tag="image_tag"
-android:layout_marginTop="@dimen/default_margin"
             card_view:layout_constraintEnd_toEndOf="parent"
             card_view:layout_constraintStart_toStartOf="parent"
             card_view:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/winner"
-            android:layout_width="86dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/default_margin"
-            android:text="black winner"
+            android:text="black  winner"
             card_view:layout_constraintBottom_toBottomOf="parent"
-            card_view:layout_constraintEnd_toEndOf="@+id/game_title"
-            card_view:layout_constraintStart_toStartOf="@+id/game_title" />
+            card_view:layout_constraintEnd_toEndOf="parent"
+            card_view:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/player1"
@@ -97,12 +97,11 @@ android:layout_marginTop="@dimen/default_margin"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/default_margin"
-            android:layout_marginBottom="@dimen/default_margin"
             android:text="@string/game_time"
             android:textAlignment="center"
-            card_view:layout_constraintEnd_toEndOf="parent"
+            card_view:layout_constraintEnd_toEndOf="@+id/player2"
             card_view:layout_constraintHorizontal_bias="0.515"
-            card_view:layout_constraintStart_toStartOf="parent"
+            card_view:layout_constraintStart_toStartOf="@+id/player1"
             card_view:layout_constraintTop_toBottomOf="@+id/game_title" />
 
 

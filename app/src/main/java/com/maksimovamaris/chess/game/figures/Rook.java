@@ -12,11 +12,20 @@ import java.util.List;
  * @author машуля
  */
 public class Rook extends ChessFigure {
-
+private boolean moved;
     public Rook(Colors color, Cell c) {
         super(color, c);
         name = Figures.ROOK;
+        moved=false;
 
+    }
+
+    public boolean isMoved() {
+        return moved;
+    }
+
+    public void setMoved(boolean moved) {
+        this.moved = moved;
     }
 
     @Override

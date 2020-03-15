@@ -12,7 +12,9 @@ import com.maksimovamaris.chess.repository.RepositoryHolder;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author машуля
@@ -26,8 +28,8 @@ public class BoardDirector {
     private Board board;
     private GamesRepositoryImpl repository;
     private Date date;
-    Cell whiteKingPos;
-    Cell blackKingPos;
+    Map<Colors, ChessFigure> kings;
+
     private static String TAG = "In TestGameBehavour";
     String botPlayer;
     String gameName;
@@ -45,6 +47,15 @@ public class BoardDirector {
         }
     }
 
+    public String getBotPlayer() {
+        return botPlayer;
+    }
+
+
+    public String getHumanPlayer() {
+        return humanPlayer;
+    }
+
     public void setBotPlayer(String botPlayer) {
         this.botPlayer = botPlayer;
     }
@@ -57,14 +68,6 @@ public class BoardDirector {
         this.humanPlayer = humanPlayer;
     }
 
-    public String getBotPlayer() {
-        return botPlayer;
-    }
-
-    public String getHumanPlayer() {
-        return humanPlayer;
-    }
-
     public Date getDate() {
         return date;
     }
@@ -73,8 +76,6 @@ public class BoardDirector {
      * Расставляет фигуры в первоначальное положение
      */
     public void startGame() {
-        whiteKingPos = new Cell(4, 0);
-        blackKingPos = new Cell(4, 7);
 
         //когда игра начинается с начала, фигуры встают в исходные позиции
         for (Colors color : Colors.values()) {
@@ -122,6 +123,13 @@ public class BoardDirector {
             }
         }
         countScores();
+
+        King whiteKing = (King) (board.field[4][0]);
+        King blackKing = (King) (board.field[4][7]);
+        kings = new HashMap<>();
+
+        kings.put(Colors.WHITE, whiteKing);
+        kings.put(Colors.BLACK, blackKing);
     }
 
     /**
@@ -152,9 +160,8 @@ public class BoardDirector {
         List<MoveData> moveData = repository.getGameNotation(date);
         GameData gameData = repository.getGameByDate(date);
         this.setGameName(gameData.getName());
-        this.setHumanPlayer(gameData.getHuman_player());
-        this.setBotPlayer(gameData.getBot_player());
-
+        this.humanPlayer = gameData.getHuman_player();
+        this.botPlayer = gameData.getBot_player();
         //начинаем с чистой доски с начальными позициями фигур
         //(она у нас уже есть)
         //ставим ту же дату, что была в восстановленной игре
@@ -162,12 +169,42 @@ public class BoardDirector {
         for (MoveData d : moveData) {
             Cell c0 = new Cell(d.getX0(), d.getY0());
             Cell c1 = new Cell(d.getX1(), d.getY1());
-            //savedFigure всегда null,
-            //мы не будем ничего прихранять, так как не собираемся откатываться назад
-            //название фигур не нужно, оно только для нотации
-            updateBoard(c0, c1);
+            ChessFigure newFigure = null;
+            //если произошло превращение пешки
+            //смотрим в какую фигуру она превратилась
+
+            newFigure = pawnTurning(d.getNewFigureName(),
+                    new FigureInfo().getColor(getFigure(c0)), c1);
+
+            updateBoard(c0, c1, newFigure);
         }
         return moveData.size();
+    }
+
+    /**
+     * возвращает фигуру в которую превратится пешка
+     *
+     * @param newFigure имя новой фигуры
+     * @param color     цвет новой фигуры
+     * @param c1        ячейка для новой фигуры
+     * @return
+     */
+    ChessFigure pawnTurning(String newFigure, Colors color, Cell c1) {
+
+        if (newFigure.equals(Figures.KNIGHT.toString()))
+            return new Knight(color, c1);
+
+        if (newFigure.equals(Figures.BISHOP.toString()))
+            return new Bishop(color, c1);
+
+        if (newFigure.equals(Figures.QUEEN.toString()))
+            return new Queen(color, c1);
+
+        if (newFigure.equals(Figures.ROOK.toString()))
+
+            return new Rook(color, c1);
+        return null;
+
     }
 
     /**
@@ -177,33 +214,45 @@ public class BoardDirector {
      * @param c1 сюда становится фигура, занимавшая позицию с0
      *           вместе с доской обновляется сумма очков на доске для фигур
      */
-    public void updateBoard(Cell c0, Cell c1) {
+    public void updateBoard(Cell c0, Cell c1, ChessFigure newFigure) {
+        //сохраняем фигуру в с0, чтобы потом проверить,
+        // король ли это
+        ChessFigure figure = getFigure(c0);
+
         double scoreBeforeC0;
         double scoreBeforeC1;
         double scoreAfterC1;
 //посчитали очки фигур в с0 и в с1 до перестановки - это будем отнимать
         scoreBeforeC0 = computeScoreInCell(c0);
         scoreBeforeC1 = computeScoreInCell(c1);
-
-        if (this.getFigure(c0) instanceof King) {
-            if (new FigureInfo().getColor(this.getFigure(c0)) == Colors.BLACK)
-                blackKingPos = c1;
-            else
-                whiteKingPos = c1;
+        ChessFigure f = this.getFigure(c0);
+        //если произошло превращение пешки
+        if (newFigure != null) {
+            board.field[c1.getX()][c1.getY()] = newFigure;
+        } else {
+            new FigureInfo().setPosition(board.field[c0.getX()][c0.getY()], c1);
+            board.field[c1.getX()][c1.getY()] = board.field[c0.getX()][c0.getY()];
         }
-
-        new FigureInfo().setPosition(board.field[c0.getX()][c0.getY()], c1);
-        board.field[c1.getX()][c1.getY()] = board.field[c0.getX()][c0.getY()];
         board.field[c0.getX()][c0.getY()] = null;
-
-//                savedFigure;
-
         //переставили фигуры, посчитали, что теперь в с1, это прибавим
 
         scoreAfterC1 = computeScoreInCell(c1);
         score = score - scoreBeforeC0 - scoreBeforeC1 + scoreAfterC1;
 
+        //если это король и он "скакнул" далеко, добавляем движение ладьи, то есть осуществляем рокировку
+        if ((figure instanceof King) && (Math.abs(c0.getX() - c1.getX()) > 1)) {
+            if (c1.getX() == 2)
+                updateBoard(new Cell(0, c0.getY()), new Cell(3, c0.getY()), null);
+            else
+                updateBoard(new Cell(7, c0.getY()), new Cell(5, c0.getY()), null);
+        }
+    }
 
+    void updateMoves(Cell c) {
+        if ((new FigureInfo().getName(getFigure(c)) == Figures.KING) && !(((King) getFigure(c)).isMoved()))
+            ((King) getFigure(c)).setMoved(true);
+        if ((new FigureInfo().getName(getFigure(c)) == Figures.ROOK) && !(((Rook) getFigure(c)).isMoved()))
+            ((Rook) getFigure(c)).setMoved(true);
     }
 
     /**
@@ -223,8 +272,6 @@ public class BoardDirector {
      */
     public void setBoard(Board b, Cell whiteKingPos, Cell blackKingPos) {
         board.field = b.field;
-        this.whiteKingPos = whiteKingPos;
-        this.blackKingPos = blackKingPos;
     }
 
     /**
@@ -246,9 +293,9 @@ public class BoardDirector {
      * @param c0         откуда пошла
      * @param c1         куда пошла
      */
-    void writeMove(String figureName, Cell c0, Cell c1) {
+    void writeMove(String figureName, Cell c0, Cell c1, String savedFigureName) {
         try {
-            repository.addMove(figureName, c0, c1, date);
+            repository.addMove(figureName, c0, c1, savedFigureName, date);
         } catch (NullPointerException e) {
             Log.d(TAG, "writeMove() called with: figureName = [" + figureName + "], c0 = [" + c0 + "], c1 = [" + c1 + "]");
         }

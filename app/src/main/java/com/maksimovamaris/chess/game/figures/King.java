@@ -6,20 +6,27 @@ import com.maksimovamaris.chess.game.action.Cell;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Король. Сердце армии. Ходит на одну клетку во все стороны
  *
  * @author машуля
  */
 public class King extends ChessFigure {
-
+private boolean moved;
 
     public King(Colors color, Cell c) {
         super(color, c);
         name = Figures.KING;
+        moved=false;
     }
 
+    public boolean isMoved() {
+        return moved;
+    }
+
+    public void setMoved(boolean moved) {
+        this.moved = moved;
+    }
 
     @Override
     public List<Cell> getPossiblePositions(BoardDirector boardDirector) {
@@ -34,4 +41,5 @@ public class King extends ChessFigure {
         }
         return correctPositions;
     }
+
 }

@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -71,7 +70,7 @@ public class GameListFragment extends Fragment {
             @Override
             public void onClick(View view, final int position) {
                 Intent intent = new Intent(getContext(), GameActivity.class);
-                intent.putExtra(getString(R.string.key_game), gameData.getValue().get(position).getGame_date());
+                intent.putExtra(getString(R.string.game_date), gameData.getValue().get(position).getGame_date());
                 intent.putExtra(getString(R.string.recycler_human),gameData.getValue().get(position).getHuman_player());
                 intent.putExtra(getString(R.string.recycler_bot),gameData.getValue().get(position).getBot_player());
                 startActivity(intent);

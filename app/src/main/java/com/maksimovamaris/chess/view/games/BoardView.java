@@ -1,5 +1,6 @@
 package com.maksimovamaris.chess.view.games;
 
+import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.figures.*;
 
 import android.content.Context;
@@ -21,8 +22,8 @@ import com.maksimovamaris.chess.game.action.Cell;
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.game.action.Game;
 
-import java.util.Date;
-import java.util.LinkedList;
+import java.util.ArrayList;
+
 import java.util.List;
 
 /**
@@ -43,6 +44,8 @@ public class BoardView extends View {
     private Cell selection;
     private Game game;
     private FigureInfo info;
+    private BoardDirector director;
+    private List<Cell> hintArray;
 
     public BoardView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -53,11 +56,12 @@ public class BoardView extends View {
         hintPaint.setStyle(Paint.Style.STROKE);
         hintPaint.setStrokeWidth(HINT_WIDTH);
         info = new FigureInfo();
-
+        hintArray = new ArrayList<>();
     }
 
     public void setGame(Game g) {
         game = g;
+        director = game.getBoardDirector();
 //        game.createGame(getContext(), date, gameName, humanPlayer, botPlayer);
     }
 
@@ -69,9 +73,7 @@ public class BoardView extends View {
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onDraw(Canvas canvas) {
-
         super.onDraw(canvas);
-        List<Cell> hintArray = new LinkedList<>();
         Cell c;
         float cellWidth = canvas.getWidth() / 9;
         String letters = getResources().getString(R.string.letters);
@@ -96,14 +98,12 @@ public class BoardView extends View {
                     Cell c1 = new Cell(x - 1, y - 1);
                     drawCell(c, canvas, cellWidth);
 
-                    if (game.getBoardDirector().getFigure(c1) != null) {
+                    if (director.getFigure(c1) != null) {
                         //фигура рисуется поверх только что нарисованной клетки и должна бдыть всегда видна
-                        drawFigure(game.getBoardDirector().getFigure(c1), canvas, c, cellWidth);
+                        drawFigure(director.getFigure(c1), canvas, c, cellWidth);
                         if (selection != null && selection.equals(c1)) {
-                            if (game.getBoardDirector().getFigure(c1).getPossiblePositions(game.getBoardDirector()).size() != 0)
-                                hintArray.addAll(game.getBoardDirector().getFigure(c1).getPossiblePositions(game.getBoardDirector()));
-                            else
-                                Toast.makeText(getContext(), info.getName(game.getBoardDirector().getFigure(c1)).
+                            if (hintArray.size() == 0)
+                                Toast.makeText(getContext(), info.getName(director.getFigure(c1)).
                                         toString().toLowerCase() + " can't move!", Toast.LENGTH_SHORT).show();
 
                         }
@@ -144,7 +144,6 @@ public class BoardView extends View {
     }
 
     private void drawFigure(ChessFigure figure, Canvas canvas, Cell c, float cellWidth) {
-
         Bitmap img = BitmapFactory.decodeResource(getResources(), new FigureInfo().getImageId(figure));
         img = Bitmap.createScaledBitmap(img, (int) (cellWidth), (int) (cellWidth), false);
         canvas.drawBitmap(img, cellWidth * (c.getX()), cellWidth * (8 - c.getY()), boardPaint);
@@ -177,12 +176,13 @@ public class BoardView extends View {
     }
 
 
-    public void updateView(Cell c, boolean firstTime) {
+    public void updateView(Cell c, List<Cell> hintArray, boolean firstTime, BoardDirector director) {
 //если не первый раз, отрисовываем обновление на доске
         if (!firstTime) {
             selection = c;
-
-                invalidate();
+            this.hintArray = hintArray;
+            this.director = director;
+            invalidate();
 
         }
 
@@ -190,7 +190,7 @@ public class BoardView extends View {
             game.moveBot(firstTime);
 
         }
-        if(game.getCurrentPlayer().isBot())
+        if (game.getCurrentPlayer().isBot())
             game.moveBot(firstTime);
     }
 
