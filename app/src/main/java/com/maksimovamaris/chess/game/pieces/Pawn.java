@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author машуля
  */
-public class Pawn extends ChessFigure {
+public class Pawn extends Piece {
 
     public Pawn(Colors color, Cell c) {
         super(color, c);

@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.mock;
 
 public abstract class TestHelper {
 
-    ChessFigure anyFigure;
+    Piece anyFigure;
     BoardDirector director;
     Cell initialPosition;
     List<Cell> correctPositions;
@@ -28,12 +28,12 @@ public abstract class TestHelper {
     public void initialPrepare() {
 
         director = mock(BoardDirector.class);
-        anyFigure = mock(ChessFigure.class);
+        anyFigure = mock(Piece.class);
         initialPosition = new Cell(1, 1);
         correctPositions = new ArrayList<>();
     }
 
-    void testPosition(ChessFigure figure, List<Cell> correctPositions) {
+    void testPosition(Piece figure, List<Cell> correctPositions) {
 
         Collections.sort(correctPositions);
         List<Cell> expectedPositions = figure.getPossiblePositions(director);

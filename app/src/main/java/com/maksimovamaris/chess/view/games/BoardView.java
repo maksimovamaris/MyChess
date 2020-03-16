@@ -1,7 +1,7 @@
 package com.maksimovamaris.chess.view.games;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
-import com.maksimovamaris.chess.game.figures.*;
+import com.maksimovamaris.chess.game.pieces.*;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -143,7 +143,7 @@ public class BoardView extends View {
                 (8 - c.getY()) * cellWidth, boardPaint);
     }
 
-    private void drawFigure(ChessFigure figure, Canvas canvas, Cell c, float cellWidth) {
+    private void drawFigure(Piece figure, Canvas canvas, Cell c, float cellWidth) {
         Bitmap img = BitmapFactory.decodeResource(getResources(), new FigureInfo().getImageId(figure));
         img = Bitmap.createScaledBitmap(img, (int) (cellWidth), (int) (cellWidth), false);
         canvas.drawBitmap(img, cellWidth * (c.getX()), cellWidth * (8 - c.getY()), boardPaint);

@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
@@ -28,7 +28,7 @@ public class StraightCells {
         return pos;
     }
 
-    void block(ChessFigure anyFigure, BoardDirector director) {
+    void block(Piece anyFigure, BoardDirector director) {
 
         when(director.getFigure(new Cell(2, 1))).thenReturn(anyFigure);
         when(director.sameColor(new Cell(2, 1), initialPosition)).thenReturn(true);
@@ -43,7 +43,7 @@ public class StraightCells {
         when(director.sameColor(new Cell(1, 0), initialPosition)).thenReturn(true);
     }
 
-    void setEat(ChessFigure anyFigure, BoardDirector director) {
+    void setEat(Piece anyFigure, BoardDirector director) {
         when(director.getFigure(new Cell(1, 7))).thenReturn(anyFigure);
         when(director.sameColor(initialPosition, new Cell(1, 7))).thenReturn(false);
 

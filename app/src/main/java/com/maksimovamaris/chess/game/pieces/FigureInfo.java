@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.game.action.Cell;
@@ -70,7 +70,7 @@ public class FigureInfo {
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
     };
 
-    public int getImageId(ChessFigure figure) {
+    public int getImageId(Piece figure) {
 
         switch (figure.name) {
             case KING:
@@ -113,23 +113,23 @@ public class FigureInfo {
         return 0;
     }
 
-    public Figures getName(ChessFigure figure) {
+    public Figures getName(Piece figure) {
         return figure.name;
     }
 
-    public Colors getColor(ChessFigure figure) {
+    public Colors getColor(Piece figure) {
         return figure.color;
     }
 
-    public Cell getPosition(ChessFigure figure) {
+    public Cell getPosition(Piece figure) {
         return figure.position;
     }
 
-    public void setPosition(ChessFigure figure, Cell pos) {
+    public void setPosition(Piece figure, Cell pos) {
         figure.position = pos;
     }
 
-    public double[][] getScore(ChessFigure figure) {
+    public double[][] getScore(Piece figure) {
         switch (figure.name) {
             case KING:
                 return kingScores;
@@ -149,7 +149,7 @@ public class FigureInfo {
 
     }
 
-    public int getWeight(ChessFigure figure) {
+    public int getWeight(Piece figure) {
         switch (figure.name) {
             case KING:
                 return kingWeight;

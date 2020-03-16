@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 public enum Colors {
     WHITE(1), BLACK(-1);

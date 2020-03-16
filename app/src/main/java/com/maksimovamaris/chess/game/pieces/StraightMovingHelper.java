@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
@@ -12,7 +12,7 @@ public class StraightMovingHelper extends Rook {
         super(color, c);
     }
 
-    public List<Cell> moveStraight(ChessFigure figure, BoardDirector boardDirector) {
+    public List<Cell> moveStraight(Piece figure, BoardDirector boardDirector) {
         List<Cell> correctPositions = new ArrayList<>();
 
         //проверяет по вертикали

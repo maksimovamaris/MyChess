@@ -1,8 +1,7 @@
 package com.maksimovamaris.chess.view.games;
 
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
-
 import android.view.LayoutInflater;
 
 import android.view.View;
@@ -22,6 +21,7 @@ import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.DateConverter;
 import com.maksimovamaris.chess.data.GameData;
 import com.maksimovamaris.chess.game.action.GameHolder;
+import com.maksimovamaris.chess.presenter.RestoreGameView;
 import com.maksimovamaris.chess.repository.GamesRepositoryImpl;
 import com.maksimovamaris.chess.repository.RepositoryHolder;
 import com.maksimovamaris.chess.utils.Runner;
@@ -40,6 +40,18 @@ public class GameListFragment extends Fragment {
     private RecyclerView gamesRecyclerView;
     private Runner runner;
     private TextView noGames;
+    private RestoreGameView restoreGameView;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        if (context instanceof RestoreGameView) {
+            restoreGameView = (RestoreGameView) context;
+        } else {
+            restoreGameView = (RestoreGameView) getParentFragment();
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,11 +81,10 @@ public class GameListFragment extends Fragment {
                 gamesRecyclerView, new ClickListener() {
             @Override
             public void onClick(View view, final int position) {
-                Intent intent = new Intent(getContext(), GameActivity.class);
-                intent.putExtra(getString(R.string.game_date), gameData.getValue().get(position).getGame_date());
-                intent.putExtra(getString(R.string.recycler_human),gameData.getValue().get(position).getHuman_player());
-                intent.putExtra(getString(R.string.recycler_bot),gameData.getValue().get(position).getBot_player());
-                startActivity(intent);
+
+                        restoreGameView.onGameRestored(gameData.getValue().get(position).getGame_date(),
+                        gameData.getValue().get(position).getHuman_player(),
+                        gameData.getValue().get(position).getBot_player());
             }
 
             @Override

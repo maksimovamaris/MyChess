@@ -7,10 +7,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
-
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -89,7 +87,7 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.GameLi
                 color = "white";
         } else
             color = gamesDataset.get(position).getTurn().toLowerCase();
-        holder.gameWinner.setText(color + "      " + title);
+        holder.gameWinner.setText(color + " " + title);
         holder.gameTitle.setText(gamesDataset.get(position).getName());
         if(gamesDataset.get(position).getBot_player().toLowerCase().equals("white"))
         {holder.player1.setText("Bot");

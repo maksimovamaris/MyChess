@@ -2,19 +2,18 @@ package com.maksimovamaris.chess.game.action;
 
 import android.content.Context;
 
-import com.maksimovamaris.chess.game.figures.Bishop;
-import com.maksimovamaris.chess.game.figures.Colors;
-import com.maksimovamaris.chess.game.figures.King;
-import com.maksimovamaris.chess.game.figures.Knight;
-import com.maksimovamaris.chess.game.figures.Pawn;
-import com.maksimovamaris.chess.game.figures.Queen;
-import com.maksimovamaris.chess.game.figures.Rook;
+import com.maksimovamaris.chess.game.pieces.Bishop;
+import com.maksimovamaris.chess.game.pieces.Colors;
+import com.maksimovamaris.chess.game.pieces.King;
+import com.maksimovamaris.chess.game.pieces.Knight;
+import com.maksimovamaris.chess.game.pieces.Pawn;
+import com.maksimovamaris.chess.game.pieces.Queen;
+import com.maksimovamaris.chess.game.pieces.Rook;
 import com.maksimovamaris.chess.utils.StubRunner;
 import com.maksimovamaris.chess.view.games.BoardView;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 

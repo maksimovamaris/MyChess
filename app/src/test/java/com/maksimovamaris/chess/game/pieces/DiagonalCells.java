@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
@@ -29,7 +29,7 @@ public class DiagonalCells {
         return pos;
     }
 
-    void block(ChessFigure anyFigure, BoardDirector director) {
+    void block(Piece anyFigure, BoardDirector director) {
 
         when(director.getFigure(new Cell(2, 2))).thenReturn(anyFigure);
         when(director.sameColor(new Cell(2, 2), initialPosition)).thenReturn(true);
@@ -45,7 +45,7 @@ public class DiagonalCells {
 
     }
 
-    void setEat(ChessFigure anyFigure, BoardDirector director) {
+    void setEat(Piece anyFigure, BoardDirector director) {
 
         when(director.getFigure(new Cell(7, 7))).thenReturn(anyFigure);
         when(director.sameColor(new Cell(7, 7), initialPosition)).thenReturn(false);

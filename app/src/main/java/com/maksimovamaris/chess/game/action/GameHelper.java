@@ -11,6 +11,10 @@ public class GameHelper implements GameNotationListener {
 
     @Override
     public void modifyNotation(boolean notation) {
+        //если нотация не нужна, удаляем игру
+        if(!notation)
+            game.clean();
+        else
         game.setNotation(notation);
     }
 

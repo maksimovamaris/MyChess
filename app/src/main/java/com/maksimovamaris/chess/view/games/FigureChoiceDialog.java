@@ -3,7 +3,6 @@ package com.maksimovamaris.chess.view.games;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +15,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.maksimovamaris.chess.game.action.FigureChoiceListener;
-import com.maksimovamaris.chess.game.figures.Figures;
+import com.maksimovamaris.chess.game.pieces.Figures;
 
 public class FigureChoiceDialog extends DialogFragment {
     private String newFigure;

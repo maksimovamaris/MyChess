@@ -19,7 +19,7 @@ import com.maksimovamaris.chess.game.action.GameEndListener;
 import com.maksimovamaris.chess.game.action.GameHelper;
 import com.maksimovamaris.chess.game.action.GameHolder;
 import com.maksimovamaris.chess.game.action.GameLocker;
-import com.maksimovamaris.chess.game.figures.Colors;
+import com.maksimovamaris.chess.game.pieces.Colors;
 
 
 import java.util.Date;
@@ -153,10 +153,9 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
      * чтобы отобразить это в адаптере
      */
     @Override
-    protected void onDestroy() {
+    protected void onStop() {
+        super.onStop();
         game.updateTurn();
-        super.onDestroy();
-
     }
 
     @Override
@@ -169,7 +168,6 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         gameEndDialog.setGameNotationListener(new GameHelper(getApplicationContext()));
         gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
         game.detachView();
-//        gameEndDialog.setCanceledOnTouchOutside(false);
     }
 
     /**
@@ -197,4 +195,3 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         game.pawnTurning(figureName);
     }
 }
-

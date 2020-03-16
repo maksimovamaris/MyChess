@@ -32,8 +32,8 @@
 
         <TextView
             android:id="@+id/textView4"
-            android:layout_width="22dp"
-            android:layout_height="19dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="@string/vs"
             card_view:layout_constraintBottom_toTopOf="@+id/winner"
@@ -54,7 +54,7 @@
 
         <TextView
             android:id="@+id/winner"
-            android:layout_width="85dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/default_margin"
@@ -65,7 +65,7 @@
 
         <TextView
             android:id="@+id/player1"
-            android:layout_width="85dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/default_margin"
@@ -79,7 +79,7 @@
 
         <TextView
             android:id="@+id/player2"
-            android:layout_width="85dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/default_margin"

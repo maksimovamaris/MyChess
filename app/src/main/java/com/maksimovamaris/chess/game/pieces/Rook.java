@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
@@ -11,7 +11,7 @@ import java.util.List;
  * @see StraightMovingHelper
  * @author машуля
  */
-public class Rook extends ChessFigure {
+public class Rook extends Piece {
 private boolean moved;
     public Rook(Colors color, Cell c) {
         super(color, c);

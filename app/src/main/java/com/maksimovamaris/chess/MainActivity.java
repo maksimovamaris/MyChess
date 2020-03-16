@@ -13,20 +13,25 @@ import androidx.navigation.ui.NavigationUI;
 import android.content.Intent;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import com.maksimovamaris.chess.preferences.PreferencesActivity;
+import com.maksimovamaris.chess.presenter.AddGameView;
+import com.maksimovamaris.chess.presenter.RestoreGameView;
+import com.maksimovamaris.chess.view.games.GameActivity;
 import com.maksimovamaris.chess.view.games.GameStartDialog;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity implements AddGameView, RestoreGameView {
     private AppBarConfiguration mAppBarConfiguration;
     private GameStartDialog gameStartDialog;
     private FloatingActionButton addGameBut;
@@ -36,16 +41,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
         fragmentManager = getSupportFragmentManager();
-
-//        GameStartDialog prev = (GameStartDialog) (getSupportFragmentManager().findFragmentByTag(getResources().getString(R.string.tag_start_game)));
-//        if (prev != null) {
-//            prev.dismiss();
-//        }
-
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         addGameBut = findViewById(R.id.fab);
@@ -99,9 +95,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        Log.d("MainActivity", "onStart() called");
-        super.onStart();
+    public void onGameAdded(String gameName, String human, String bot) {
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra(getResources().getString(R.string.game_name), gameName);
+        intent.putExtra(getResources().getString(R.string.dialog_human), human);
+        intent.putExtra(getResources().getString(R.string.dialog_bot), bot);
+        startActivity(intent);
+        detachGameAddDialog();
+
+    }
+
+    private void detachGameAddDialog() {
+        FragmentManager manager=getSupportFragmentManager();
+        GameStartDialog dialog=(GameStartDialog)(manager.findFragmentByTag(getResources().getString(R.string.tag_start_game)));
+        if(dialog!=null)
+        dialog.getDialog().dismiss();
+    }
+
+    @Override
+    public void onError(String name) {
+        Toast.makeText(this, name+" > 10 signs", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onGameRestored(Date date, String human, String bot) {
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra(getString(R.string.game_date),date);
+        intent.putExtra(getString(R.string.recycler_human),human);
+        intent.putExtra(getString(R.string.recycler_bot),bot);
+        startActivity(intent);
     }
 }
 

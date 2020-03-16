@@ -1,17 +1,16 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Ферзь. Самый мощный воин. Ходит как по прямой, так и по диагонали
  * @author машуля
  */
-public class Queen extends ChessFigure {
+public class Queen extends Piece {
 
 
     public Queen(Colors color, Cell c ) {

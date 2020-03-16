@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
@@ -11,7 +11,7 @@ import java.util.List;
  * @see DiagonalMovingHelper
  * @author машуля
  */
-public class Bishop extends ChessFigure {
+public class Bishop extends Piece {
     private int image;
 
 

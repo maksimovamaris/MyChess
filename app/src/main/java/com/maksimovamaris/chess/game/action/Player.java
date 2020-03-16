@@ -1,7 +1,7 @@
 package com.maksimovamaris.chess.game.action;
 
 
-import com.maksimovamaris.chess.game.figures.Colors;
+import com.maksimovamaris.chess.game.pieces.Colors;
 
 public class Player {
     private Colors color;

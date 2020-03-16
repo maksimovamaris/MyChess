@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.Cell;
@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Конь. Скачет буквой Г
  */
-public class Knight extends ChessFigure {
+public class Knight extends Piece {
     private List<Cell> possibleCells;
 
 

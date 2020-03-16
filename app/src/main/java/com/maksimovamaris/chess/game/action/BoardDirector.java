@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.maksimovamaris.chess.data.GameData;
 import com.maksimovamaris.chess.data.MoveData;
-import com.maksimovamaris.chess.game.figures.*;
+import com.maksimovamaris.chess.game.pieces.*;
 import com.maksimovamaris.chess.repository.GamesRepositoryImpl;
 import com.maksimovamaris.chess.repository.RepositoryHolder;
 
@@ -28,7 +28,7 @@ public class BoardDirector {
     private Board board;
     private GamesRepositoryImpl repository;
     private Date date;
-    Map<Colors, ChessFigure> kings;
+    Map<Colors, Piece> kings;
 
     private static String TAG = "In TestGameBehavour";
     String botPlayer;
@@ -135,8 +135,8 @@ public class BoardDirector {
     /**
      * @return возвращает фигуры, оставшиеся на доске
      */
-    List<ChessFigure> getArmy() {
-        List<ChessFigure> army = new ArrayList<>();
+    List<Piece> getArmy() {
+        List<Piece> army = new ArrayList<>();
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
                 //если ячейка не пуста и это не король
@@ -146,7 +146,7 @@ public class BoardDirector {
         return army;
     }
 
-    public ChessFigure getFigure(Cell c) {
+    public Piece getFigure(Cell c) {
         return board.field[c.getX()][c.getY()];
     }
 
@@ -169,7 +169,7 @@ public class BoardDirector {
         for (MoveData d : moveData) {
             Cell c0 = new Cell(d.getX0(), d.getY0());
             Cell c1 = new Cell(d.getX1(), d.getY1());
-            ChessFigure newFigure = null;
+            Piece newFigure = null;
             //если произошло превращение пешки
             //смотрим в какую фигуру она превратилась
 
@@ -189,7 +189,7 @@ public class BoardDirector {
      * @param c1        ячейка для новой фигуры
      * @return
      */
-    ChessFigure pawnTurning(String newFigure, Colors color, Cell c1) {
+    Piece pawnTurning(String newFigure, Colors color, Cell c1) {
 
         if (newFigure.equals(Figures.KNIGHT.toString()))
             return new Knight(color, c1);
@@ -214,10 +214,10 @@ public class BoardDirector {
      * @param c1 сюда становится фигура, занимавшая позицию с0
      *           вместе с доской обновляется сумма очков на доске для фигур
      */
-    public void updateBoard(Cell c0, Cell c1, ChessFigure newFigure) {
+    public void updateBoard(Cell c0, Cell c1, Piece newFigure) {
         //сохраняем фигуру в с0, чтобы потом проверить,
         // король ли это
-        ChessFigure figure = getFigure(c0);
+        Piece figure = getFigure(c0);
 
         double scoreBeforeC0;
         double scoreBeforeC1;
@@ -225,7 +225,7 @@ public class BoardDirector {
 //посчитали очки фигур в с0 и в с1 до перестановки - это будем отнимать
         scoreBeforeC0 = computeScoreInCell(c0);
         scoreBeforeC1 = computeScoreInCell(c1);
-        ChessFigure f = this.getFigure(c0);
+        Piece f = this.getFigure(c0);
         //если произошло превращение пешки
         if (newFigure != null) {
             board.field[c1.getX()][c1.getY()] = newFigure;
@@ -293,11 +293,10 @@ public class BoardDirector {
      * @param c0         откуда пошла
      * @param c1         куда пошла
      */
-    void writeMove(String figureName, Cell c0, Cell c1, String savedFigureName) {
+    void writeMove(String figureName, Cell c0, String capture, Cell c1, String savedFigureName, String threat) {
         try {
-            repository.addMove(figureName, c0, c1, savedFigureName, date);
+            repository.addMove(figureName, c0, capture, c1, savedFigureName, threat, date);
         } catch (NullPointerException e) {
-            Log.d(TAG, "writeMove() called with: figureName = [" + figureName + "], c0 = [" + c0 + "], c1 = [" + c1 + "]");
         }
     }
 
@@ -312,8 +311,11 @@ public class BoardDirector {
         repository.updateGame(gameData);
     }
 
+    void cleanGame() {
+        repository.deleteGameByDate(date);
+    }
 
-    void restoreFigure(ChessFigure figure, Cell c) {
+    void restoreFigure(Piece figure, Cell c) {
         board.field[c.getX()][c.getY()] = figure;
         score = score + computeScoreInCell(c);
     }

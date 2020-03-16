@@ -1,10 +1,10 @@
 package com.maksimovamaris.chess.game.action;
 
-import com.maksimovamaris.chess.game.figures.*;
+import com.maksimovamaris.chess.game.pieces.*;
 
 public class Board {
-    ChessFigure[][] field;
+    Piece[][] field;
     Board() {
-        field = new ChessFigure[8][8];
+        field = new Piece[8][8];
     }
 }

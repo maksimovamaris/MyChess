@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 import com.maksimovamaris.chess.game.action.Cell;
 
@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 
 public class TestKnightBehavour extends TestHelper {
-    private ChessFigure testKnight;
+    private Piece testKnight;
     private List<Cell> correctPositions;
 
 

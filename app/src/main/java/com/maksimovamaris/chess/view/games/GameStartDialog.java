@@ -1,7 +1,8 @@
 package com.maksimovamaris.chess.view.games;
 
 import android.app.Dialog;
-import android.content.Intent;
+
+import android.content.Context;
 import android.os.Bundle;
 
 import android.view.LayoutInflater;
@@ -12,11 +13,14 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.maksimovamaris.chess.R;
-import com.maksimovamaris.chess.game.figures.Colors;
+import com.maksimovamaris.chess.presenter.AddGameView;
+import com.maksimovamaris.chess.presenter.GamePresenter;
+import com.maksimovamaris.chess.presenter.GamePresenterHolder;
 
 
 public class GameStartDialog extends DialogFragment {
@@ -27,11 +31,29 @@ public class GameStartDialog extends DialogFragment {
     private EditText gameName;
     private EditText playerName;
     private Switch switchBot;
-    private String game = "Untitled game";
-    private String humanPlayer = "Unknown player";
-    private String botPlayer = "";
     private boolean botWhite = false;
     private boolean botBlack = false;
+    private AddGameView addGameView;
+    private GamePresenter presenter;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        presenter = ((GamePresenterHolder) (getContext().getApplicationContext())).getGamePresenter();
+        presenter.setGameView(addGameView);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        if (context instanceof AddGameView) {
+            addGameView = (AddGameView) context;
+        } else {
+            addGameView = (AddGameView) getParentFragment();
+        }
+    }
+
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -66,21 +88,9 @@ public class GameStartDialog extends DialogFragment {
         startPlayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext(), GameActivity.class);
-                setGame();
-                intent.putExtra(getResources().getString(R.string.game_name), game);
-                setPlayer();
-                if (botBlack) {
-                    botPlayer = Colors.BLACK.toString();
-
-                } else if (botWhite) {
-                    botPlayer = Colors.WHITE.toString();
-                }
-                intent.putExtra(getResources().getString(R.string.dialog_human), humanPlayer);
-                intent.putExtra(getResources().getString(R.string.dialog_bot), botPlayer);
-                getDialog().dismiss();
-                startActivity(intent);
-
+                presenter.sendResult(gameName.getText().toString(),
+                        playerName.getText().toString(), botWhite, botBlack);
+//                getDialog().dismiss();
             }
         });
 
@@ -105,17 +115,6 @@ public class GameStartDialog extends DialogFragment {
         }
     };
 
-    private void setPlayer() {
-        if (!playerName.getText().toString().equals(""))
-            humanPlayer = playerName.getText().toString();
-
-    }
-
-
-    private void setGame() {
-        if (!gameName.getText().toString().equals(""))
-            game = gameName.getText().toString();
-    }
 
     @Override
     public void onResume() {

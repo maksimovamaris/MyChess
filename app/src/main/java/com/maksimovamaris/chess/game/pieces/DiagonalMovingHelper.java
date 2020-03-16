@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.game.figures;
+package com.maksimovamaris.chess.game.pieces;
 
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
@@ -13,7 +13,7 @@ public class DiagonalMovingHelper extends Bishop {
         super(color, c);
     }
 
-    public List<Cell> moveDiagonal(ChessFigure figure, BoardDirector boardDirector) {
+    public List<Cell> moveDiagonal(Piece figure, BoardDirector boardDirector) {
         List<Cell> correctPositions = new ArrayList<>();
         Cell[] cells = new Cell[2];
         cells[0] = new Cell(figure.position.getX() + 1, figure.position.getY() + 1);

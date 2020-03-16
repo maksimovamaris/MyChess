@@ -14,6 +14,7 @@ import java.util.List;
 
 public class GamesRepositoryImpl implements GamesRepository {
     private GamesDataBase gamesDataBase;
+
     public GamesRepositoryImpl(GamesDataBase dataBase) {
         gamesDataBase = dataBase;
     }
@@ -46,14 +47,18 @@ public class GamesRepositoryImpl implements GamesRepository {
 
     @Override
     @WorkerThread
-    public MoveData addMove(String figureName, Cell c0, Cell c1, String savedFigureName,Date gameDate) {
+    public MoveData addMove(String figureName, Cell c0, String capture, Cell c1,
+                            String savedFigureName, String threat, Date gameDate)
+    {
         MoveData moveData = new MoveData();
-        moveData.setFigireName(figureName);
+        moveData.setFigureName(figureName);
         moveData.setX0(c0.getX());
         moveData.setY0(c0.getY());
+        moveData.setCapture(capture);
         moveData.setX1(c1.getX());
         moveData.setY1(c1.getY());
         moveData.setNewFigureName(savedFigureName);
+        moveData.setThreat(threat);
         moveData.setGameDate(gameDate);
         gamesDataBase.getGameDao().addMove(moveData);
         return moveData;

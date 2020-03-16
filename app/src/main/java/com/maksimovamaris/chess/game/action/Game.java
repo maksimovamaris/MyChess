@@ -3,15 +3,15 @@ package com.maksimovamaris.chess.game.action;
 import android.content.Context;
 import android.widget.Toast;
 
-import com.maksimovamaris.chess.game.figures.Bishop;
-import com.maksimovamaris.chess.game.figures.ChessFigure;
-import com.maksimovamaris.chess.game.figures.FigureInfo;
-import com.maksimovamaris.chess.game.figures.King;
-import com.maksimovamaris.chess.game.figures.Knight;
-import com.maksimovamaris.chess.game.figures.Pawn;
-import com.maksimovamaris.chess.game.figures.Rook;
+import com.maksimovamaris.chess.game.pieces.Bishop;
+import com.maksimovamaris.chess.game.pieces.Piece;
+import com.maksimovamaris.chess.game.pieces.FigureInfo;
+import com.maksimovamaris.chess.game.pieces.King;
+import com.maksimovamaris.chess.game.pieces.Knight;
+import com.maksimovamaris.chess.game.pieces.Pawn;
+import com.maksimovamaris.chess.game.pieces.Rook;
 import com.maksimovamaris.chess.utils.Runner;
-import com.maksimovamaris.chess.game.figures.Colors;
+import com.maksimovamaris.chess.game.pieces.Colors;
 import com.maksimovamaris.chess.view.games.BoardView;
 
 import java.util.ArrayList;
@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
 
 /**
  * @author машуля
@@ -265,6 +264,12 @@ public class Game {
         }
 
     }
+    void clean()
+    {
+        runner.runInBackground(()->{
+            boardDirector.cleanGame();
+        });
+    }
 
 
     /**
@@ -285,7 +290,7 @@ public class Game {
         for (List<Cell> l : moves) {
             //перед каждым ходом проверяем, нужно ли просчитывать на ход вперед или нет
             this.virtualOpponent = virtualOpponent;
-            ChessFigure savedFigure = boardDirector.getFigure(l.get(1));
+            Piece savedFigure = boardDirector.getFigure(l.get(1));
             changePlayer();
             updateGame(l.get(0), l.get(1), null);
             if (!kingProtected(getKingPos())) {
@@ -349,8 +354,11 @@ public class Game {
             List<Cell> bestMove = weightedMoves.get(selectBestMove(bot_rescue, true));
             //выберем ход для бота
             //запишем ход бота в базу данных
+
             boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(bestMove.get(0))).toString(),
-                    bestMove.get(0), bestMove.get(1), "");
+                    bestMove.get(0), " - ", bestMove.get(1), "", "");
+
+
             //сделаем финальное обновление игры
             updateGame(bestMove.get(0), bestMove.get(1), null);
             //очищаем ходы бота
@@ -382,7 +390,7 @@ public class Game {
      */
     private boolean checkMate(Cell attack) {
         //проверка, может ли король убежать
-        ChessFigure savedFigure;
+        Piece savedFigure;
         for (Cell c : boardDirector.getFigure(getKingPos()).getPossiblePositions(boardDirector)) {
             if (canMove(getKingPos(), c)) {
                 if ((!botPlays && !boardDirector.botPlayer.equals("")) || (virtualOpponent))
@@ -455,7 +463,7 @@ public class Game {
         if (checkFigure(c0, c1))
         //фигура может по правилам сходить в клетку, осталось проверить короля
         {
-            ChessFigure savedFigure = boardDirector.getFigure(c1);
+            Piece savedFigure = boardDirector.getFigure(c1);
             //обновляем игру
             updateGame(c0, c1, null);
             //если король после данного хода защищен
@@ -504,15 +512,15 @@ public class Game {
             return true;
 
         //иначе смотрим на возможные ходы текущего игрока
-        List<ChessFigure> currentArmy = new ArrayList<>();
+        List<Piece> currentArmy = new ArrayList<>();
         //отделяем фигуры, которые нужны
-        for (ChessFigure figure : boardDirector.getArmy())
+        for (Piece figure : boardDirector.getArmy())
             if (new FigureInfo().getColor(figure) == getCurrentPlayer().getColor())
                 currentArmy.add(figure);
         //добавляем короля
         currentArmy.add(boardDirector.getFigure(getKingPos()));
         //проходимся по фигурам текущего игрока
-        for (ChessFigure figure : currentArmy)
+        for (Piece figure : currentArmy)
             //проверяем каждую из них, может ли она сходить
             if (figure.getPossiblePositions(boardDirector).size() != 0)
                 for (Cell c : figure.getPossiblePositions(boardDirector))
@@ -554,7 +562,7 @@ public class Game {
      * вызывается метод класса
      * boardDirector.updateBoard()
      */
-    public void updateGame(Cell c0, Cell c1, ChessFigure newFigure) {
+    public void updateGame(Cell c0, Cell c1, Piece newFigure) {
         boardDirector.updateBoard(c0, c1, newFigure);
     }
 
@@ -614,30 +622,40 @@ public class Game {
      * @param c0 откуда
      * @param c1 куда
      */
-    private void processMove(Cell c0, Cell c1, ChessFigure savedFigure) {
-        updateGame(c0, c1, savedFigure);
+    private void processMove(Cell c0, Cell c1, Piece savedFigure) {
+
         //сохраняем копию на директор, и ее передаем во вью
 
 //        BoardDirector d = boardDirector;
 //        boardDirector = d;
 
 
-        //даже в случае рокировки сохраняется только 1 ход,
-        // чтобы не было путаницы с очередью игрока, которая считается
-        //исходя из
-        //количества ходов
         runner.runInBackground(() ->
         {
+            //разберемся, что записать в бд о ходе
+            String capture = "-";
+            String threat = "";
+            String newFigureName = "";
+            String figureName=new FigureInfo().getName(boardDirector.getFigure(c0)).toString();
+
+            //фиксируем взятие фигуры
+            Piece capturedFigure = boardDirector.getFigure(c1);
+            if (capturedFigure != null)
+                capture = ":";
+            if (savedFigure != null)
+                newFigureName = new FigureInfo().getName(savedFigure).toString();
+
+
+            //даже в случае рокировки сохраняется только 1 ход,
+            // чтобы не было путаницы с очередью игрока, которая считается
+            //исходя из
+            //количества ходов
+
+            updateGame(c0, c1, savedFigure);
             //смотрим, кто пошел в с1, если это король или ладья, отмечаем что они уже ходили
             boardDirector.updateMoves(c1);
             // запись хода
             //фигура, стоявшая в с0, УЖЕ переместилась в с1 - ее имя берем из с1
-
-            String name = "";
-            if (savedFigure != null)
-                name = new FigureInfo().getName(savedFigure).toString();
-
-            boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(c1)).toString(), c0, c1, name);
             changePlayer();
             isMate = null;
             isDraw = null;
@@ -650,17 +668,18 @@ public class Game {
                 isMate = checkMate(attack);
                 //если определен мат
                 if (isMate) {
+                    threat = " X";
                     runner.runOnMain(() -> {
                         notifyView(null, false, copy);
-//                        locker.lock();
-                        gameEndListener.endGame("Mate!");
+                        gameEndListener.endGame("Checkmate!");
 
                     });
                 }
                 //иначе только шах
                 else {
-
+                    threat = " +";
                     runner.runOnMain(() -> Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show());
+
                 }
             }
             //если все хорошо, проверяем на ничью
@@ -668,7 +687,6 @@ public class Game {
                 if (checkDraw()) {
                     runner.runOnMain(() -> {
                         notifyView(null, false, boardDirector);
-//                        locker.lock();
                         gameEndListener.endGame("Draw");
                     });
                 } else {
@@ -679,11 +697,14 @@ public class Game {
 
                 }
             }
+
+            boardDirector.writeMove(figureName, c0, capture, c1, newFigureName, threat);
+
         });
     }
 
     public void pawnTurning(String figureName) {
-        ChessFigure newFigure = boardDirector.pawnTurning(figureName,
+        Piece newFigure = boardDirector.pawnTurning(figureName,
                 getCurrentPlayer().getColor(), movingPoint);
         //фиксируем ход
         processMove(selection, movingPoint, newFigure);

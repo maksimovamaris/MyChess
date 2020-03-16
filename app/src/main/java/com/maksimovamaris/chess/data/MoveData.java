@@ -14,12 +14,12 @@ import java.util.Date;
         parentColumns = "date",
         childColumns = "game_date",
         onDelete = ForeignKey.CASCADE))
-public class MoveData implements Comparable{
+public class MoveData implements Comparable {
     @PrimaryKey(autoGenerate = true)
     private long moveId;
 
     @ColumnInfo(name = "figure_name")
-    public String figire_name;
+    public String figure_name;
     @ColumnInfo(name = "x0")
     private int x0;
     @ColumnInfo(name = "y0")
@@ -28,7 +28,7 @@ public class MoveData implements Comparable{
     private int x1;
     @ColumnInfo(name = "y1")
     private int y1;
-    @ColumnInfo(name="saved figure")
+    @ColumnInfo(name = "saved figure")
     private String newFigureName;
 
     public String getNewFigureName() {
@@ -42,6 +42,31 @@ public class MoveData implements Comparable{
     @ColumnInfo(name = "game_date")
     private Date gameDate;
 
+    @ColumnInfo(name = "capture")
+    private String capture;
+
+
+    @ColumnInfo(name = "threat")
+    private String threat;
+
+    public String getThreat() {
+        return threat;
+    }
+
+    public void setThreat(String threat) {
+        this.threat = threat;
+    }
+
+
+
+    public String getCapture() {
+        return capture;
+    }
+
+    public void setCapture(String capture) {
+        this.capture = capture;
+    }
+
     public long getMoveId() {
         return moveId;
     }
@@ -50,12 +75,12 @@ public class MoveData implements Comparable{
         this.moveId = moveId;
     }
 
-    public String getFigire_name() {
-        return figire_name;
+    public String getFigureName() {
+        return figure_name;
     }
 
-    public void setFigireName(String figire_name) {
-        this.figire_name = figire_name;
+    public void setFigureName(String figire_name) {
+        this.figure_name = figire_name;
     }
 
     public int getX0() {
@@ -100,8 +125,8 @@ public class MoveData implements Comparable{
 
     @Override
     public int compareTo(Object o) {
-        Cell compareCell1= new Cell(this.getX0(),this.getY0());
-        Cell compareCell2= new Cell(this.getX1(),this.getY1());
+        Cell compareCell1 = new Cell(this.getX0(), this.getY0());
+        Cell compareCell2 = new Cell(this.getX1(), this.getY1());
         return (compareCell1.compareTo(compareCell2));
     }
 }
