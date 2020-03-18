@@ -91,6 +91,7 @@ public class Game {
         hints = new ArrayList<>();
         weightedMoves = new HashMap<>();
         boardDirector = new BoardDirector(context);
+        copy=boardDirector;
         boardDirector.startGame();
         setNotation(false);
     }
@@ -286,61 +287,69 @@ public class Game {
      * и с минимальной суммой для черных
      */
     private Double selectBestMove(List<List<Cell>> moves, boolean virtualOpponent) {
-        List<Double> opponentScore = new ArrayList<>();
+
+
+
+//        List<Double> opponentScore = new ArrayList<>();
         for (List<Cell> l : moves) {
-            //перед каждым ходом проверяем, нужно ли просчитывать на ход вперед или нет
-            this.virtualOpponent = virtualOpponent;
+//            //перед каждым ходом проверяем, нужно ли просчитывать на ход вперед или нет
+//            this.virtualOpponent = virtualOpponent;
             Piece savedFigure = boardDirector.getFigure(l.get(1));
             changePlayer();
             updateGame(l.get(0), l.get(1), null);
             if (!kingProtected(getKingPos())) {
                 isMate = checkMate(attack);
                 if (isMate) {
-                    changePlayer();
+//                    changePlayer();
                     updateGame(l.get(1), l.get(0), null);
                     boardDirector.restoreFigure(savedFigure, l.get(1));
                     double mateScore = 900;
+                    weightedMoves.put(mateScore,l);
                     return mateScore;
                 }
-            } else if (checkDraw()) {
+            }
+            if (checkDraw()) {
                 isDraw = true;
                 changePlayer();
                 updateGame(l.get(1), l.get(0), null);
                 double drawScore = 800;
+                weightedMoves.put(drawScore,l);
                 return drawScore;
-            } else {
-                //если мы не считали xод за противника
-                if (virtualOpponent) {
-                    //посчитаем ход за противника
-                    //сумму очков за сделанный ход и "лучший", по нашим критериям, ход противника
-                    weightedMoves.put(boardDirector.score +
-                            selectBestMove(opponent_rescue, false), l);
-                    opponent_rescue.clear();
-                } else
-                //если мы как раз считаем за противника
-                {
-                    opponentScore.add(boardDirector.score);
-                }
             }
-            //после каждого просчитанного вперед хода откатываемся обратно
-            changePlayer();
-            updateGame(l.get(1), l.get(0), null);
-            boardDirector.restoreFigure(savedFigure, l.get(1));
-            isDraw = isMate = null;
-        }
-        //если считаем за противника
-        if (!virtualOpponent) {
-            if (getCurrentPlayer().getColor() == Colors.WHITE)
-                return Collections.max(opponentScore);
-            else
-                return Collections.min(opponentScore);
-        } else {
+//                //если мы не считали xод за противника
+//                if (virtualOpponent) {
+//                    //посчитаем ход за противника
+//                    //сумму очков за сделанный ход и "лучший", по нашим критериям, ход противника
+                weightedMoves.put(boardDirector.score, l);
+//                                    +
+//                            selectBestMove(opponent_rescue, false), l);
+//                    opponent_rescue.clear();
+//                } else
+//                //если мы как раз считаем за противника
+//                {
+//                    opponentScore.add(boardDirector.score);
+//                }
+//            }
+//            //после каждого просчитанного вперед хода откатываемся обратно
+                changePlayer();
+                updateGame(l.get(1), l.get(0), null);
+                boardDirector.restoreFigure(savedFigure, l.get(1));
+                isDraw = isMate = null;
 
+//        //если считаем за противника
+//        if (!virtualOpponent) {
+//            if (getCurrentPlayer().getColor() == Colors.WHITE)
+//                return Collections.max(opponentScore);
+//            else
+//                return Collections.min(opponentScore);
+//        } else {
+        }
+//
             if (getCurrentPlayer().getColor() == Colors.WHITE)
                 return (Collections.max(weightedMoves.keySet()));
             else
                 return (Collections.min(weightedMoves.keySet()));
-        }
+
     }
 
     public void moveBot(boolean firstMove) {
@@ -357,10 +366,9 @@ public class Game {
 
             boardDirector.writeMove(new FigureInfo().getName(boardDirector.getFigure(bestMove.get(0))).toString(),
                     bestMove.get(0), " - ", bestMove.get(1), "", "");
-
-
             //сделаем финальное обновление игры
             updateGame(bestMove.get(0), bestMove.get(1), null);
+            changePlayer();
             //очищаем ходы бота
             weightedMoves.clear();
             bot_rescue.clear();
@@ -369,10 +377,8 @@ public class Game {
             virtualOpponent = false;
             runner.runOnMain(() -> {
                 locker.unlock();
-                if (getCurrentPlayer().isBot())
-                    changePlayer();
-                notifyView(null, false, boardDirector);
-                if (isMate != null) {
+                notifyView(null, false, copy);
+                if (isMate!= null) {
                     locker.lock();
                     gameEndListener.endGame("Mate!");
                 } else if (isDraw != null) {
@@ -678,8 +684,9 @@ public class Game {
                 //иначе только шах
                 else {
                     threat = " +";
-                    runner.runOnMain(() -> Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show());
-
+                    runner.runOnMain(() -> {
+                        notifyView(null, false, copy);
+                        Toast.makeText(boardView.getContext(), "Check", Toast.LENGTH_SHORT).show();});
                 }
             }
             //если все хорошо, проверяем на ничью

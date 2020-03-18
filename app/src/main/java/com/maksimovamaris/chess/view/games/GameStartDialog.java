@@ -90,7 +90,6 @@ public class GameStartDialog extends DialogFragment {
             public void onClick(View v) {
                 presenter.sendResult(gameName.getText().toString(),
                         playerName.getText().toString(), botWhite, botBlack);
-//                getDialog().dismiss();
             }
         });
 

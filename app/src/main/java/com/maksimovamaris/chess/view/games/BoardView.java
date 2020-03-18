@@ -186,10 +186,6 @@ public class BoardView extends View {
 
         }
 
-        if (game.getCurrentPlayer().isBot()) {
-            game.moveBot(firstTime);
-
-        }
         if (game.getCurrentPlayer().isBot())
             game.moveBot(firstTime);
     }
