@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.MoveData;
 import com.maksimovamaris.chess.game.action.GameHolder;
+import com.maksimovamaris.chess.game.pieces.Colors;
 import com.maksimovamaris.chess.repository.GamesRepositoryImpl;
 import com.maksimovamaris.chess.repository.RepositoryHolder;
 import com.maksimovamaris.chess.utils.Runner;
@@ -25,11 +26,14 @@ public class GameNotationActivity extends Activity {
     private Date gameDate;
     private RecyclerView notationView;
     private GameNotationAdapter adapter;
+    private boolean whiteFront;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_list);
+        whiteFront = true;
         runner = ((GameHolder) (getApplicationContext())).getRunner();
         Bundle arguments = getIntent().getExtras();
         gameDate = (Date) (arguments.get(getResources().getString(R.string.key_notation)));
@@ -37,12 +41,14 @@ public class GameNotationActivity extends Activity {
             //получаем репозиторий
             repository = ((RepositoryHolder) (getApplicationContext())).getRepository();
             moves = repository.getGameNotation(gameDate);
+            if (repository.getGameByDate(gameDate).getBot_player().equals(Colors.WHITE.toString()))
+                whiteFront = false;
             runner.runOnMain(() -> {
                 //в основном потоке прикрепляем адаптер со считанным из базы списком ходов
                 notationView = findViewById(R.id.game_list);
                 LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
                 notationView.setLayoutManager(linearLayoutManager);
-                adapter = new GameNotationAdapter(moves);
+                adapter = new GameNotationAdapter(moves, whiteFront);
                 notationView.setAdapter(adapter);
                 adapter.notifyDataSetChanged();
             });

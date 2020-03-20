@@ -21,27 +21,31 @@ public class Pawn extends Piece {
 
     @Override
     public List<Cell> getPossiblePositions(BoardDirector boardDirector) {
+
         List correctPositions = new ArrayList<Cell>();
         Cell c;
         int x = position.getX();
         int y = position.getY();
-
+        int colorIndex = color.getI();
+        //если доска перевернута, пешки "двигаются в обратную сторону"
+        if (!boardDirector.isWhiteFront())
+            colorIndex = colorIndex * (-1);
         //проверяем, может ли пешка сходить на 1 клетку вперед
-        c = new Cell(x, y + color.getI());
+        c = new Cell(x, y + colorIndex);
         if (c.isCorrect() && boardDirector.getFigure(c) == null) {
             correctPositions.add(c);
             //проверяем, может ли пешка сходить на 2 клетки вперед
-            if ((y - color.getI()) % 7 == 0) {
-                c = new Cell(x, y + 2 * color.getI());
+            if ((y - colorIndex) % 7 == 0) {
+                c = new Cell(x, y + 2 * colorIndex);
                 if (boardDirector.getFigure(c) == null)
                     correctPositions.add(c);
             }
         }
         //проверяем, может ли пешка кушать
-        c = new Cell(x - 1, y + color.getI());
+        c = new Cell(x - 1, y + colorIndex);
         if (c.isCorrect() && boardDirector.getFigure(c) != null && !boardDirector.sameColor(c, this.position))
             correctPositions.add(c);
-        c = new Cell(x + 1, y + color.getI());
+        c = new Cell(x + 1, y + colorIndex);
         if (c.isCorrect() && boardDirector.getFigure(c) != null && !boardDirector.sameColor(c, this.position))
             correctPositions.add(c);
 

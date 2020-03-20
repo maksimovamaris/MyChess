@@ -1,53 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_gravity="center"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/player1_text"
+    <View
+        android:id="@+id/shadow_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_margin"
-        android:textAlignment="center"
-        android:textSize="@dimen/small_text" />
-    <TextView
+        android:layout_height="match_parent"
+        android:alpha="0.3"
+        android:background="@android:color/black"
+        android:clickable="true"
+        android:translationZ="10dp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="@dimen/small_text"
-        android:text="@string/vs"/>
-    <TextView
-        android:id="@+id/player2_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/default_margin"
-        android:textAlignment="center"
-        android:textSize="@dimen/small_text" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/player_white"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:textAlignment="center"
+            android:textSize="@dimen/small_text" />
 
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/vs"
+            android:textAlignment="center"
+            android:textSize="@dimen/small_text" />
 
-        <com.maksimovamaris.chess.view.games.BoardView
-            android:id="@+id/board_view"
-            android:layout_width="350dp"
-            android:layout_height="350dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/default_margin"
-            android:layout_marginRight="@dimen/default_margin" />
+        <TextView
+            android:id="@+id/player_black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin"
+            android:textAlignment="center"
+            android:textSize="@dimen/small_text" />
 
         <View
-            android:id="@+id/shadow_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0.7"
-            android:background="@android:color/black"
-            android:clickable="true"
-            android:translationZ="10dp"
+            android:id="@+id/space_view"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
             android:visibility="gone" />
-    </FrameLayout>
-</LinearLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <com.maksimovamaris.chess.view.games.BoardView
+                android:id="@+id/board_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/default_margin"
+                android:layout_marginRight="@dimen/default_margin" />
+
+
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

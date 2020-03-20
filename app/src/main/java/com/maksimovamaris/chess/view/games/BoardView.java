@@ -25,6 +25,8 @@ import com.maksimovamaris.chess.game.action.Game;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * отображает фигуры на доске, общается с
@@ -62,7 +64,6 @@ public class BoardView extends View {
     public void setGame(Game g) {
         game = g;
         director = game.getBoardDirector();
-//        game.createGame(getContext(), date, gameName, humanPlayer, botPlayer);
     }
 
     public void setColors(int colorDark, int colorLight) {
@@ -72,7 +73,7 @@ public class BoardView extends View {
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected synchronized void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Cell c;
         float cellWidth = canvas.getWidth() / 9;
@@ -83,9 +84,15 @@ public class BoardView extends View {
                 //рисование надписей
                 if (x == 0 || y == 0) {
                     if (x == 0 && y != 0) {
-                        drawCapture(String.valueOf(y), c, canvas, cellWidth);
+                        int y1 = y;
+                        if (!director.isWhiteFront())
+                            drawCapture(String.valueOf(y1), c, canvas, cellWidth);
                     } else if (x != 0 && y == 0) {
-                        drawCapture(String.valueOf(letters.charAt(x - 1)), c, canvas, cellWidth);
+                        int x1 = x;
+                        if (!director.isWhiteFront()) {
+                            x1 = 9 - x;
+                        }
+                        drawCapture(String.valueOf(letters.charAt(x1 - 1)), c, canvas, cellWidth);
 
                     }
                 }
@@ -143,6 +150,7 @@ public class BoardView extends View {
                 (8 - c.getY()) * cellWidth, boardPaint);
     }
 
+
     private void drawFigure(Piece figure, Canvas canvas, Cell c, float cellWidth) {
         Bitmap img = BitmapFactory.decodeResource(getResources(), new FigureInfo().getImageId(figure));
         img = Bitmap.createScaledBitmap(img, (int) (cellWidth), (int) (cellWidth), false);
@@ -183,8 +191,8 @@ public class BoardView extends View {
             this.hintArray = hintArray;
             this.director = director;
             invalidate();
-
         }
+
 
         if (game.getCurrentPlayer().isBot())
             game.moveBot(firstTime);

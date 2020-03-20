@@ -3,9 +3,13 @@ package com.maksimovamaris.chess.view.games;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 
 
 import androidx.annotation.NonNull;
@@ -28,6 +32,13 @@ public class GameEndDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Window window = getDialog().getWindow();
+        // set "origin" to top left corner, so to speak
+        window.setGravity(Gravity.TOP);
+        // after that, setting values for x and y works "naturally"
+        WindowManager.LayoutParams params = window.getAttributes();
+        params.y = 0;
+        window.setAttributes(params);
         getDialog().setCanceledOnTouchOutside(false);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -67,5 +78,6 @@ public class GameEndDialog extends DialogFragment {
 
         return builder.create();
     }
+
 
 }

@@ -1,6 +1,7 @@
 package com.maksimovamaris.chess.game.action;
 
 import android.content.Context;
+
 import android.util.Log;
 
 import com.maksimovamaris.chess.data.GameData;
@@ -29,17 +30,29 @@ public class BoardDirector {
     private GamesRepositoryImpl repository;
     private Date date;
     Map<Colors, Piece> kings;
-
+    private boolean whiteFront;
     private static String TAG = "In TestGameBehavour";
     String botPlayer;
     String gameName;
     String humanPlayer;
     double score;
+    private int longRookX;
+    private int shortRookX;
+    private int longRookX1;
+    private int shortRookX1;
+    private int longKingX;
 
 
     public BoardDirector(Context context) {
+        longRookX=0;
+        longRookX1=3;
+        shortRookX=7;
+        shortRookX1=5;
+        longKingX=2;
         board = new Board();
         date = new Date();
+        //по умолчанию перед игроком белые фигуры
+        whiteFront = true;
         try {
             repository = ((RepositoryHolder) (context.getApplicationContext())).getRepository();
         } catch (NullPointerException e) {
@@ -47,17 +60,17 @@ public class BoardDirector {
         }
     }
 
-    public String getBotPlayer() {
-        return botPlayer;
-    }
-
-
-    public String getHumanPlayer() {
-        return humanPlayer;
+    public boolean isWhiteFront() {
+        return whiteFront;
     }
 
     public void setBotPlayer(String botPlayer) {
         this.botPlayer = botPlayer;
+        //если бот играет белыми, поворачиваем доску черными фигурами к игроку
+        if (botPlayer.equals(Colors.WHITE.toString())) {
+            whiteFront = false;
+            rotateBoard();
+        }
     }
 
     public void setGameName(String gameName) {
@@ -132,6 +145,24 @@ public class BoardDirector {
         kings.put(Colors.BLACK, blackKing);
     }
 
+    void rotateBoard() {
+        shortRookX=7-shortRookX;
+        shortRookX1=7-shortRookX1;
+        longRookX=7-longRookX;
+        longRookX1=7-longRookX1;
+        longKingX=7-longKingX;
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 4; j++) {
+                if (board.field[i][j] != null) {
+                    Piece savedFigure = board.field[7-i][7 - j];
+                    updateBoard(new Cell(i, j), new Cell(7-i, 7 - j), null);
+                    restoreFigure(savedFigure, new Cell(i, j));
+                    new FigureInfo().setPosition(savedFigure, new Cell(i, j));
+                }
+
+            }
+    }
+
     /**
      * @return возвращает фигуры, оставшиеся на доске
      */
@@ -155,13 +186,20 @@ public class BoardDirector {
      * @return возвращает позицию на доске, восстановленную по ходам
      */
     public int restoreGame(Date date) {
-
         //подготавливаем нужные ходы
         List<MoveData> moveData = repository.getGameNotation(date);
         GameData gameData = repository.getGameByDate(date);
         this.setGameName(gameData.getName());
         this.humanPlayer = gameData.getHuman_player();
         this.botPlayer = gameData.getBot_player();
+
+        if (botPlayer.equals(Colors.WHITE.toString())) {
+            whiteFront = false;
+
+            rotateBoard();
+
+        }
+
         //начинаем с чистой доски с начальными позициями фигур
         //(она у нас уже есть)
         //ставим ту же дату, что была в восстановленной игре
@@ -169,7 +207,7 @@ public class BoardDirector {
         for (MoveData d : moveData) {
             Cell c0 = new Cell(d.getX0(), d.getY0());
             Cell c1 = new Cell(d.getX1(), d.getY1());
-            Piece newFigure = null;
+            Piece newFigure;
             //если произошло превращение пешки
             //смотрим в какую фигуру она превратилась
 
@@ -177,6 +215,7 @@ public class BoardDirector {
                     new FigureInfo().getColor(getFigure(c0)), c1);
 
             updateBoard(c0, c1, newFigure);
+            updateMoves(c1);
         }
         return moveData.size();
     }
@@ -208,11 +247,12 @@ public class BoardDirector {
     }
 
     /**
-     * процедура обновляет доску
+     * самая важная процедура
+     * обновляет доску
      *
      * @param c0 обнуляется
      * @param c1 сюда становится фигура, занимавшая позицию с0
-     *           вместе с доской обновляется сумма очков на доске для фигур
+     *  вместе с доской обновляется сумма очков на доске для фигур
      */
     public void updateBoard(Cell c0, Cell c1, Piece newFigure) {
         //сохраняем фигуру в с0, чтобы потом проверить,
@@ -241,10 +281,12 @@ public class BoardDirector {
 
         //если это король и он "скакнул" далеко, добавляем движение ладьи, то есть осуществляем рокировку
         if ((figure instanceof King) && (Math.abs(c0.getX() - c1.getX()) > 1)) {
-            if (c1.getX() == 2)
-                updateBoard(new Cell(0, c0.getY()), new Cell(3, c0.getY()), null);
+            if (c1.getX() == longKingX)
+                //0
+                updateBoard(new Cell(longRookX, c0.getY()), new Cell(longRookX1, c0.getY()), null);
             else
-                updateBoard(new Cell(7, c0.getY()), new Cell(5, c0.getY()), null);
+
+                updateBoard(new Cell(shortRookX, c0.getY()), new Cell(shortRookX1, c0.getY()), null);
         }
     }
 
@@ -314,7 +356,6 @@ public class BoardDirector {
     void cleanGame() {
         repository.deleteGameByDate(date);
     }
-
     void restoreFigure(Piece figure, Cell c) {
         board.field[c.getX()][c.getY()] = figure;
         score = score + computeScoreInCell(c);

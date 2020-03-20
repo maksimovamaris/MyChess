@@ -1,12 +1,18 @@
 package com.maksimovamaris.chess.view.games;
 
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.view.View;
+
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
@@ -31,20 +37,22 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     private Date savedDate;
     private Date gameDate;
     private View lockView;
+    private View spaceView;
     private String gameName;
     private String humanPlayer;
     private String botPlayer;
-    private TextView player1Text;
-    private TextView player2Text;
+    private TextView playerWhite;
+    private TextView playerBlack;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         lockView = findViewById(R.id.shadow_view);
+        spaceView = findViewById(R.id.space_view);
         boardView = findViewById(R.id.board_view);
-        player1Text = findViewById(R.id.player1_text);
-        player2Text = findViewById(R.id.player2_text);
+        playerWhite = findViewById(R.id.player_white);
+        playerBlack = findViewById(R.id.player_black);
         //получаем игру
         game = ((GameHolder) (getApplication())).getGame();
         gameDate = null;
@@ -77,16 +85,21 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         state.putLong(getResources().getString(R.string.key_save_gameDate), (new DateConverter()).fromDate(game.getBoardDirector().getDate()));
-        state.putString(getString(R.string.key_save_gameHuman), player1Text.getText().toString());
-        state.putString(getResources().getString(R.string.key_save_gameBot), player2Text.getText().toString());
+        state.putString(getString(R.string.key_save_gameWhite), playerWhite.getText().toString());
+        state.putString(getResources().getString(R.string.key_save_gameBlack), playerBlack.getText().toString());
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         savedDate = new DateConverter().toDate(savedInstanceState.getLong(getResources().getString(R.string.key_save_gameDate)));
-        humanPlayer = savedInstanceState.getString(getResources().getString(R.string.key_save_gameHuman));
-        botPlayer = savedInstanceState.getString(getResources().getString(R.string.key_save_gameBot));
+
+        String white
+                = savedInstanceState.getString(getResources().getString(R.string.key_save_gameWhite));
+        String black
+                = savedInstanceState.getString(getResources().getString(R.string.key_save_gameBlack));
+        playerWhite.setText(white);
+        playerBlack.setText(black);
     }
 
     @Override
@@ -127,21 +140,17 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         //прикрепляем ее к view
 
         game.attachView(boardView);
-        if (botPlayer == null || humanPlayer == null) {
-            botPlayer = game.getBoardDirector().getBotPlayer();
-            humanPlayer = game.getBoardDirector().getHumanPlayer();
-        }
-
-
-        if (botPlayer.equals(Colors.WHITE.toString())) {
-            player1Text.setText("Bot");
-            player2Text.setText(humanPlayer);
-        } else if (botPlayer.equals(Colors.BLACK.toString())) {
-            player1Text.setText(humanPlayer);
-            player2Text.setText("Bot");
-        } else {
-            player1Text.setText(humanPlayer);
-            player2Text.setText(humanPlayer);
+        if ((botPlayer != null) && (humanPlayer != null)) {
+            if (botPlayer.equals(Colors.WHITE.toString())) {
+                playerWhite.setText("Bot");
+                playerBlack.setText(humanPlayer);
+            } else if (botPlayer.equals(Colors.BLACK.toString())) {
+                playerWhite.setText(humanPlayer);
+                playerBlack.setText("Bot");
+            } else {
+                playerWhite.setText(humanPlayer);
+                playerBlack.setText(humanPlayer);
+            }
         }
 
 
@@ -158,8 +167,10 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         game.updateTurn();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void endGame(String result) {
+        spaceView.setVisibility(View.VISIBLE);
         FragmentManager manager = getSupportFragmentManager();
         GameEndDialog gameEndDialog = new GameEndDialog();
         Bundle bundle = new Bundle();
@@ -185,6 +196,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
 
     @Override
     public void onChoiceStarted() {
+        spaceView.setVisibility(View.VISIBLE);
         FragmentManager manager = getSupportFragmentManager();
         FigureChoiceDialog dialog = new FigureChoiceDialog();
         dialog.show(manager, getResources().getString(R.string.choice_dialog));
@@ -192,6 +204,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
 
     @Override
     public void onChoiceMade(String figureName) {
+        spaceView.setVisibility(View.GONE);
         game.pawnTurning(figureName);
     }
 }

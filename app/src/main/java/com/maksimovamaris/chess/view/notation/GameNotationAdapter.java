@@ -17,6 +17,7 @@ import java.util.List;
 
 public class GameNotationAdapter extends RecyclerView.Adapter<GameNotationAdapter.GameNotationViewHolder> {
     private ArrayList<MoveData> movesDataset;
+    private boolean whiteFront;
 
     public static class GameNotationViewHolder extends RecyclerView.ViewHolder {
         private TextView move;
@@ -27,8 +28,9 @@ public class GameNotationAdapter extends RecyclerView.Adapter<GameNotationAdapte
         }
     }
 
-    public GameNotationAdapter(@NonNull List<MoveData> moves) {
+    public GameNotationAdapter(@NonNull List<MoveData> moves, boolean whiteFront) {
         movesDataset = (ArrayList) (moves);
+        this.whiteFront = whiteFront;
     }
 
     @NonNull
@@ -43,44 +45,58 @@ public class GameNotationAdapter extends RecyclerView.Adapter<GameNotationAdapte
     public void onBindViewHolder(@NonNull GameNotationAdapter.GameNotationViewHolder holder, int position) {
         String moveText = "";
         if (position % 2 == 0) {
-            moveText = ((position+2)/2)+".   "+setNotation(movesDataset.get(position));
+            moveText = ((position + 2) / 2) + ".   " + setNotation(movesDataset.get(position));
             if ((position + 1) < movesDataset.size())
-                moveText = moveText + "   " +setNotation(movesDataset.get(position + 1));
+                moveText = moveText + "   " + setNotation(movesDataset.get(position + 1));
         }
 
         holder.move.setText(moveText);
     }
 
     private String setNotation(MoveData data) {
+        int y0 = data.getY0();
+        int y1 = data.getY1();
+        int x0 = data.getX0();
+        int x1 = data.getX1();
         String figure;
         String newFigure = "";
         String alphabet = "abcdefgh";
         figure = setFigureName(data.getFigureName());
+        if (!whiteFront) {
+
+            y0 = 7 - y0;
+            y1 = 7 - y1;
+
+            x0 = 7 - x0;
+            x1 = 7 - x1;
+
+        }
+
         if (data.getNewFigureName().length() != 0)
             newFigure = setFigureName(data.getNewFigureName());
         String moveText = "";
         //ход считается после обоюдного движения белых и черных
         //если это король
-        if (figure.equals("K")&&(Math.abs(data.getX0() - data.getX1()) > 1)) {
+        if (figure.equals("K") && (Math.abs(data.getX0() - data.getX1()) > 1)) {
             //длинная рокировка
-            if ((data.getX0() - data.getX1()) > 1)
+            if ((x0 - x1) > 1)
                 moveText = moveText + "0-0-0";
             else
                 //короткая рокировка
-                if ((data.getX0() - data.getX1()) < -1)
+                if ((x0 - x1) < -1)
                     moveText = moveText + "0-0";
         } else
             //кто ходит
             moveText = moveText + figure + " "
                     //откуда ходит
-                    + alphabet.charAt(data.getX0())
+                    + alphabet.charAt(x0)
                     //к координатам по оси у не забываем +1
                     // т к шахматная доска не нумеруется с 0
-                    + (data.getY0() + 1)
+                    + (y0 + 1)
                     + "" + data.getCapture() + ""
                     //куда ходит
-                    + alphabet.charAt(data.getX1())
-                    + (data.getY1() + 1)
+                    + alphabet.charAt(x1)
+                    + (y1 + 1)
                     + " " + newFigure + "" + data.getThreat();
         return moveText;
     }
