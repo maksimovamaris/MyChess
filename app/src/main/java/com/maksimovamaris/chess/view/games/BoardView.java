@@ -25,8 +25,7 @@ import com.maksimovamaris.chess.game.action.Game;
 import java.util.ArrayList;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+
 
 /**
  * отображает фигуры на доске, общается с

@@ -1,5 +1,5 @@
 package com.maksimovamaris.chess.game.action;
 
-public interface GameNotationListener {
+public interface GameNotationListener{
     void modifyNotation(boolean notation);
 }

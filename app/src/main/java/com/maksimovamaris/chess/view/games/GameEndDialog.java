@@ -1,22 +1,21 @@
 package com.maksimovamaris.chess.view.games;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
-
 
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.game.action.GameNotationListener;
@@ -24,9 +23,18 @@ import com.maksimovamaris.chess.game.action.GameNotationListener;
 public class GameEndDialog extends DialogFragment {
     private String result;
     private GameNotationListener gameNotationListener;
+    private boolean choice;
 
-    public void setGameNotationListener(GameNotationListener gameNotationListener) {
-        this.gameNotationListener = gameNotationListener;
+
+    public void onAttach(@NonNull Context context) {
+
+        super.onAttach(context);
+
+        if (context instanceof GameNotationListener) {
+            gameNotationListener = (GameNotationListener) context;
+        } else {
+            gameNotationListener = (GameNotationListener) getParentFragment();
+        }
     }
 
     @Nullable
@@ -47,7 +55,7 @@ public class GameEndDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final String[] choiseArray = {"Save game notation"};
         result = getArguments().getString(getResources().getString(R.string.game_result));
-
+        choice = true;
         final boolean[] checkedItemsArray = {true};
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(result)
@@ -67,7 +75,8 @@ public class GameEndDialog extends DialogFragment {
                                 //записываем или не записываем игру, в зависимости от флажка
                                 for (int i = 0; i < choiseArray.length; i++) {
                                     {
-                                        gameNotationListener.modifyNotation(checkedItemsArray[i]);
+                                        choice = checkedItemsArray[i];
+                                        gameNotationListener.modifyNotation(choice);
                                     }
                                 }
                                 //выходим из активности в любом случае
@@ -76,8 +85,33 @@ public class GameEndDialog extends DialogFragment {
                             }
                         });
 
+
         return builder.create();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        getDialog().setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(android.content.DialogInterface dialog, int keyCode,
+                                 android.view.KeyEvent event) {
+
+                if ((keyCode == android.view.KeyEvent.KEYCODE_BACK)) {
+                    //This is the filter
+                    if (event.getAction() != KeyEvent.ACTION_DOWN)
+                        return true;
+                    else {
+                        gameNotationListener.modifyNotation(choice);
+                        getActivity().finish();
+                        //Hide your keyboard here!!!!!!
+                        return true; // pretend we've processed it
+                    }
+                } else
+                    return false; // pass on to be processed as normal
+            }
+        });
+    }
 
 }

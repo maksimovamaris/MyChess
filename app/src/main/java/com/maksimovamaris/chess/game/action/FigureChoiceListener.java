@@ -1,6 +1,6 @@
 package com.maksimovamaris.chess.game.action;
 
 public interface FigureChoiceListener {
-    void onChoiceStarted();
+    void onChoiceStarted(Cell selected,Cell moved);
     void onChoiceMade(String figureName);
 }

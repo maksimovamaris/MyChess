@@ -1,7 +1,6 @@
 package com.maksimovamaris.chess.game.action;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.maksimovamaris.chess.game.pieces.Bishop;
@@ -54,9 +53,6 @@ public class Game {
     private HashMap<Double, List<Cell>> weightedMoves;
     private List<Cell> hints;
     private CountDownLatch latch;
-    //сохраняем для хода пешки
-    private Cell selection;
-    private Cell movingPoint;
     private int shortKingX = 6;
     private int shortRookX = 7;
 
@@ -91,8 +87,6 @@ public class Game {
         isDraw = null;
         attack = null;
         botPlays = false;
-        selection = null;
-        movingPoint = null;
         virtualOpponent = false;
         bot_rescue = new ArrayList<>();
         opponent_rescue = new ArrayList<>();
@@ -141,6 +135,7 @@ public class Game {
         }
     }
 
+
     /**
      * восстанавливаем игру из бд по дате
      *
@@ -166,6 +161,7 @@ public class Game {
 
         });
     }
+
 
     public void setLocker(GameLocker locker) {
         this.locker = locker;
@@ -293,7 +289,7 @@ public class Game {
 
     }
 
-    void clean() {
+    public void clean() {
         runner.runInBackground(() -> {
             boardDirector.cleanGame();
         });
@@ -645,10 +641,8 @@ public class Game {
             //если это пешка и она дошла до крайней клетки доски
             if ((boardDirector.getFigure(selection) instanceof Pawn) && (c.getY() == 7 || c.getY() == 0)) {
                 //сохраняем координаты хода
-                this.selection = selection;
-                this.movingPoint = c;
                 //показываем диалог выбора фигуры
-                figureChoiceListener.onChoiceStarted();
+                figureChoiceListener.onChoiceStarted(selection,c);
                 return;
             } else
                 processMove(selection, c, null);
@@ -659,8 +653,9 @@ public class Game {
     /**
      * Изменяет игру в соотвествии с совершенным ходом
      *
-     * @param c0 откуда
-     * @param c1 куда
+     * @param c0          откуда
+     * @param c1          куда
+     * @param savedFigure
      */
     private void processMove(Cell c0, Cell c1, Piece savedFigure) {
         latch = null;
@@ -734,34 +729,28 @@ public class Game {
                     isDraw = true;
                     threat = " =";
                     runner.runOnMain(() -> {
-//
-//                        if(getCurrentPlayer().isBot())
-//                            locker.unlock();
                         changePlayer();
                         notifyView(null, false, boardDirector);
                         gameEndListener.endGame("Draw");
                     });
                 } else {
-                    latch = new CountDownLatch(1);
                     runner.runOnMain(() -> {
                         notifyView(null, false, boardDirector);
                     });
 
                 }
             }
-
-            boardDirector.writeMove(figureName, c0, capture, c1, newFigureName, threat);
-
+            //если мы не восстанавливаем последний ход игры
+                boardDirector.writeMove(figureName, c0, capture, c1, newFigureName, threat);
         });
     }
 
-    public void pawnTurning(String figureName) {
+    public void pawnTurning(Cell selected,Cell moved,String figureName) {
         Piece newFigure = boardDirector.pawnTurning(figureName,
-                getCurrentPlayer().getColor(), movingPoint);
+                getCurrentPlayer().getColor(), moved);
         //фиксируем ход
-        processMove(selection, movingPoint, newFigure);
-        //обнуляем сохраненные значения
-        movingPoint = selection = null;
+        processMove(selected, moved, newFigure);
+
     }
 
     public void updateTurn() {
@@ -845,21 +834,9 @@ public class Game {
             }
         } else
             return false;
-
         return true;
     }
 
-    public void countLatch() {
-        latch.countDown();
-    }
-
-    public void waitLatch() {
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
 }
 //еще не реализовано взятие на проходе

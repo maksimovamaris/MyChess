@@ -5,32 +5,30 @@ import android.os.Build;
 import android.os.Bundle;
 
 import android.view.View;
-
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.DateConverter;
+import com.maksimovamaris.chess.game.action.Cell;
 import com.maksimovamaris.chess.game.action.FigureChoiceListener;
 import com.maksimovamaris.chess.game.action.Game;
 import com.maksimovamaris.chess.game.action.GameEndListener;
-import com.maksimovamaris.chess.game.action.GameHelper;
 import com.maksimovamaris.chess.game.action.GameHolder;
 import com.maksimovamaris.chess.game.action.GameLocker;
+import com.maksimovamaris.chess.game.action.GameNotationListener;
 import com.maksimovamaris.chess.game.pieces.Colors;
 
 
 import java.util.Date;
 
-public class GameActivity extends AppCompatActivity implements FigureChoiceListener, GameEndListener, GameLocker {
+public class GameActivity extends AppCompatActivity implements FigureChoiceListener, GameEndListener, GameLocker, GameNotationListener {
 
     private BoardView boardView;
     private Game game;
@@ -43,6 +41,9 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     private String botPlayer;
     private TextView playerWhite;
     private TextView playerBlack;
+    private String savedResult;
+    private Cell selected;
+    private Cell moved;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -84,24 +85,40 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
+
         state.putLong(getResources().getString(R.string.key_save_gameDate), (new DateConverter()).fromDate(game.getBoardDirector().getDate()));
         state.putString(getString(R.string.key_save_gameWhite), playerWhite.getText().toString());
         state.putString(getResources().getString(R.string.key_save_gameBlack), playerBlack.getText().toString());
+        state.putString(getResources().getString(R.string.key_saved_result), savedResult);
+        if (selected != null && moved != null) {
+            state.putInt(getString(R.string.key_save_selectedX), selected.getX());
+            state.putInt(getString(R.string.key_save_selectedY), selected.getY());
+            state.putInt(getString(R.string.key_save_movedX), moved.getX());
+            state.putInt(getString(R.string.key_save_movedY), moved.getY());
+        }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         savedDate = new DateConverter().toDate(savedInstanceState.getLong(getResources().getString(R.string.key_save_gameDate)));
+        //если не успели закончить игру, сохраняем результатт игры, чтобы его восстановить
+        savedResult = savedInstanceState.getString(getResources().getString(R.string.key_saved_result));
+//восстановили координаты превращающейся пешки
+        selected = new Cell(savedInstanceState.getInt(getResources().getString(R.string.key_save_selectedX)),
+                savedInstanceState.getInt(getResources().getString(R.string.key_save_selectedY)));
 
-        String white
-                = savedInstanceState.getString(getResources().getString(R.string.key_save_gameWhite));
-        String black
-                = savedInstanceState.getString(getResources().getString(R.string.key_save_gameBlack));
+        moved = new Cell(savedInstanceState.getInt(getResources().getString(R.string.key_save_movedX)),
+                savedInstanceState.getInt(getResources().getString(R.string.key_save_movedY)));
+
+        String white = savedInstanceState.getString(getResources().getString(R.string.key_save_gameWhite));
+        String black = savedInstanceState.getString(getResources().getString(R.string.key_save_gameBlack));
         playerWhite.setText(white);
         playerBlack.setText(black);
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onResume() {
         super.onResume();
@@ -126,6 +143,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
                     botPlayer = (String) (arguments.get(getResources().getString(R.string.recycler_bot)));
                 }
             }
+
         }
 
         game.setGameEndListener(this);
@@ -153,8 +171,19 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
             }
         }
 
+        if (getSupportFragmentManager().findFragmentByTag(getResources().getString(R.string.dialog_show)) != null) {
+            spaceView.setVisibility(View.VISIBLE);
+        }
 
+        if (getSupportFragmentManager().findFragmentByTag(getResources().getString(R.string.choice_dialog)) != null) {
+            //сначала уничтожаем предыдущий диалогфрагмент
+            ((DialogFragment) (getSupportFragmentManager().findFragmentByTag
+                    (getResources().getString(R.string.choice_dialog)))).dismiss();
+
+            onChoiceStarted(selected, moved);
+        }
     }
+
 
     /**
      * когда пользователь вышел из игры запоминаем,
@@ -164,6 +193,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     @Override
     protected void onStop() {
         super.onStop();
+
         game.updateTurn();
     }
 
@@ -176,9 +206,11 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         Bundle bundle = new Bundle();
         bundle.putString(getResources().getString(R.string.game_result), result);
         gameEndDialog.setArguments(bundle);
-        gameEndDialog.setGameNotationListener(new GameHelper(getApplicationContext()));
-        gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
-        game.detachView();
+        gameEndDialog.setRetainInstance(true);
+        if (savedResult == null)
+            gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
+        this.savedResult = result;
+
     }
 
     /**
@@ -195,7 +227,9 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     }
 
     @Override
-    public void onChoiceStarted() {
+    public void onChoiceStarted(Cell selected, Cell moved) {
+        this.selected = selected;
+        this.moved = moved;
         spaceView.setVisibility(View.VISIBLE);
         FragmentManager manager = getSupportFragmentManager();
         FigureChoiceDialog dialog = new FigureChoiceDialog();
@@ -205,6 +239,19 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     @Override
     public void onChoiceMade(String figureName) {
         spaceView.setVisibility(View.GONE);
-        game.pawnTurning(figureName);
+        game.pawnTurning(selected, moved, figureName);
+        selected = null;
+        moved = null;
+    }
+
+    @Override
+    public void modifyNotation(boolean notation) {
+        //если нотация не нужна, удаляем игру
+        if(!notation)
+            game.clean();
+        else
+            game.setNotation(notation);
+        //детачимся от вью только когда мы точно вышли из игры
+        game.detachView();
     }
 }

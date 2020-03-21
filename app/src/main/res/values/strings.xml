@@ -67,6 +67,12 @@
     <string name="choice_dialog">CHOICESHOWN</string>
     <string name="key_save_gameWhite">HUMANSAVED</string>
     <string name="key_save_gameBlack">BOTSAVED</string>
+    <string name="key_saved_result">SAVEDRESULT</string>
+    <string name="key_save_selectedX">SELECTEDX</string>
+    <string name="key_save_selectedY">SELECTEDY</string>
+    <string name="key_save_movedX">MOVEDX</string>
+    <string name="key_save_movedY">MOVEDY</string>
+    <string name="key_saved_newFigure">NEWFIGURE</string>
 
 
 </resources>

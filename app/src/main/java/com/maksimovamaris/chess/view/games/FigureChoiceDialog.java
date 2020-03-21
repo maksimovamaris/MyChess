@@ -13,7 +13,6 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
@@ -23,7 +22,6 @@ import androidx.fragment.app.DialogFragment;
 
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.game.action.FigureChoiceListener;
-import com.maksimovamaris.chess.game.pieces.Figures;
 
 public class FigureChoiceDialog extends DialogFragment {
     private String newFigure;
@@ -100,4 +98,16 @@ public class FigureChoiceDialog extends DialogFragment {
     }
 
 
+//    @Override
+//    public void onSaveInstanceState(@NonNull Bundle outState) {
+//
+//        super.onSaveInstanceState(outState);
+//        outState.putString(getResources().getString(R.string.key_saved_newFigure),newFigure);
+//    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        newFigure=savedInstanceState.getString(getResources().getString(R.string.key_saved_newFigure));
+    }
 }
