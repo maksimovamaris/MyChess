@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -13,6 +14,7 @@ import androidx.navigation.ui.NavigationUI;
 import android.content.Intent;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,6 +30,7 @@ import com.maksimovamaris.chess.presenter.AddGameView;
 import com.maksimovamaris.chess.presenter.RestoreGameView;
 import com.maksimovamaris.chess.view.games.GameActivity;
 import com.maksimovamaris.chess.view.games.GameStartDialog;
+import com.maksimovamaris.chess.view.records.RecordsListFragment;
 
 import java.util.Date;
 
@@ -36,6 +39,26 @@ public class MainActivity extends AppCompatActivity implements AddGameView, Rest
     private GameStartDialog gameStartDialog;
     private FloatingActionButton addGameBut;
     private FragmentManager fragmentManager;
+
+
+    @Override
+    public void onBackPressed() {
+        FragmentManager fm = getSupportFragmentManager();
+        OnBackPressedListener backPressedListener = null;
+        for (Fragment fragment : fm.getFragments()) {
+            if (fragment instanceof RecordsListFragment) {
+                Log.d("Hello", "onBackPressed() called");
+//                backPressedListener = (OnBackPressedListener) fragment;
+                break;
+            }
+        }
+
+        if (backPressedListener != null) {
+            backPressedListener.onBackPressed();
+        } else {
+            super.onBackPressed();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,23 +129,23 @@ public class MainActivity extends AppCompatActivity implements AddGameView, Rest
     }
 
     private void detachGameAddDialog() {
-        FragmentManager manager=getSupportFragmentManager();
-        GameStartDialog dialog=(GameStartDialog)(manager.findFragmentByTag(getResources().getString(R.string.tag_start_game)));
-        if(dialog!=null)
-        dialog.getDialog().dismiss();
+        FragmentManager manager = getSupportFragmentManager();
+        GameStartDialog dialog = (GameStartDialog) (manager.findFragmentByTag(getResources().getString(R.string.tag_start_game)));
+        if (dialog != null)
+            dialog.getDialog().dismiss();
     }
 
     @Override
     public void onError(String name) {
-        Toast.makeText(this, name+" > 10 signs", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, name + " > 10 signs", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onGameRestored(Date date, String human, String bot) {
         Intent intent = new Intent(this, GameActivity.class);
-        intent.putExtra(getString(R.string.game_date),date);
-        intent.putExtra(getString(R.string.recycler_human),human);
-        intent.putExtra(getString(R.string.recycler_bot),bot);
+        intent.putExtra(getString(R.string.game_date), date);
+        intent.putExtra(getString(R.string.recycler_human), human);
+        intent.putExtra(getString(R.string.recycler_bot), bot);
         startActivity(intent);
     }
 }

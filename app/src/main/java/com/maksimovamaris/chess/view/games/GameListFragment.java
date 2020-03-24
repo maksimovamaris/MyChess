@@ -2,6 +2,7 @@ package com.maksimovamaris.chess.view.games;
 
 import android.content.Context;
 import android.os.Bundle;
+
 import android.view.LayoutInflater;
 
 import android.view.View;
@@ -17,6 +18,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.maksimovamaris.chess.OnBackPressedListener;
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.DateConverter;
 import com.maksimovamaris.chess.data.GameData;
@@ -33,7 +35,7 @@ import com.maksimovamaris.chess.view.RecyclerTouchListener;
 
 import java.util.List;
 
-public class GameListFragment extends Fragment {
+public class GameListFragment extends Fragment  {
     private GamesRepositoryImpl repository;
     private LiveData<List<GameData>> gameData;
     private View root;
@@ -103,6 +105,8 @@ public class GameListFragment extends Fragment {
     }
 
 
+
+
     private void updateView(LiveData<List<GameData>> games) {
         gameData = games;
         if (getView() != null) {
@@ -123,6 +127,8 @@ public class GameListFragment extends Fragment {
             });
         }
     }
+
+
 
     public interface ClickListener {
         void onClick(View view, int position);

@@ -194,7 +194,7 @@ public class BoardView extends View {
 
 
         if (game.getCurrentPlayer().isBot())
-            game.moveBot(firstTime);
+            game.moveBot();
     }
 
     public void printMessage(String message) {

@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.maksimovamaris.chess.OnBackPressedListener;
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.DateConverter;
 import com.maksimovamaris.chess.data.GameData;
@@ -33,7 +34,7 @@ import com.maksimovamaris.chess.view.notation.GameNotationActivity;
 
 import java.util.List;
 
-public class RecordsListFragment extends Fragment {
+public class RecordsListFragment extends Fragment implements OnBackPressedListener {
     private GamesRepositoryImpl repository;
     private LiveData<List<GameData>> gameData;
     private View root;
@@ -41,6 +42,15 @@ public class RecordsListFragment extends Fragment {
     private Runner runner;
     private GameListAdapter adapter;
     private TextView noRecords;
+
+
+    @Override
+    public void onBackPressed() {
+        getActivity().onBackPressed();
+        getChildFragmentManager().popBackStack();
+    }
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

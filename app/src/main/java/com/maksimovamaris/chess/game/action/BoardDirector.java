@@ -41,14 +41,16 @@ public class BoardDirector {
     private int longRookX1;
     private int shortRookX1;
     private int longKingX;
+    private int shortKingX;
 
 
     public BoardDirector(Context context) {
-        longRookX=0;
-        longRookX1=3;
-        shortRookX=7;
-        shortRookX1=5;
-        longKingX=2;
+        longRookX = 0;
+        longRookX1 = 3;
+        shortRookX = 7;
+        shortRookX1 = 5;
+        longKingX = 2;
+        shortKingX = 6;
         board = new Board();
         date = new Date();
         //по умолчанию перед игроком белые фигуры
@@ -101,7 +103,6 @@ public class BoardDirector {
 
             for (Figures fig : Figures.values()) {
                 switch (fig) {
-
                     case KING:
                         board.field[4][y] = new King(color, new Cell(4, y));
                         break;
@@ -146,16 +147,17 @@ public class BoardDirector {
     }
 
     void rotateBoard() {
-        shortRookX=7-shortRookX;
-        shortRookX1=7-shortRookX1;
-        longRookX=7-longRookX;
-        longRookX1=7-longRookX1;
-        longKingX=7-longKingX;
+        shortRookX = 7 - shortRookX;
+        shortRookX1 = 7 - shortRookX1;
+        longRookX = 7 - longRookX;
+        longRookX1 = 7 - longRookX1;
+        longKingX = 7 - longKingX;
+        shortKingX = 7 - shortKingX;
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 4; j++) {
                 if (board.field[i][j] != null) {
-                    Piece savedFigure = board.field[7-i][7 - j];
-                    updateBoard(new Cell(i, j), new Cell(7-i, 7 - j), null);
+                    Piece savedFigure = board.field[7 - i][7 - j];
+                    updateBoard(new Cell(i, j), new Cell(7 - i, 7 - j), null);
                     restoreFigure(savedFigure, new Cell(i, j));
                     new FigureInfo().setPosition(savedFigure, new Cell(i, j));
                 }
@@ -213,8 +215,10 @@ public class BoardDirector {
 
             newFigure = pawnTurning(d.getNewFigureName(),
                     new FigureInfo().getColor(getFigure(c0)), c1);
-
-            updateBoard(c0, c1, newFigure);
+            if (d.figure_name.equals(Figures.KING.toString()) && Math.abs(d.getX0() - d.getX1()) > 1) {
+                updateCastling(c0, c1);
+            } else
+                updateBoard(c0, c1, newFigure);
             updateMoves(c1);
         }
         return moveData.size();
@@ -252,49 +256,101 @@ public class BoardDirector {
      *
      * @param c0 обнуляется
      * @param c1 сюда становится фигура, занимавшая позицию с0
-     *  вместе с доской обновляется сумма очков на доске для фигур
+     *           вместе с доской обновляется сумма очков на доске для фигур
      */
     public void updateBoard(Cell c0, Cell c1, Piece newFigure) {
-        //сохраняем фигуру в с0, чтобы потом проверить,
-        // король ли это
-        Piece figure = getFigure(c0);
-
-        double scoreBeforeC0;
-        double scoreBeforeC1;
-        double scoreAfterC1;
+        synchronized (board.field) {
+            double scoreBeforeC0;
+            double scoreBeforeC1;
+            double scoreAfterC1;
 //посчитали очки фигур в с0 и в с1 до перестановки - это будем отнимать
-        scoreBeforeC0 = computeScoreInCell(c0);
-        scoreBeforeC1 = computeScoreInCell(c1);
-        Piece f = this.getFigure(c0);
-        //если произошло превращение пешки
-        if (newFigure != null) {
-            board.field[c1.getX()][c1.getY()] = newFigure;
-        } else {
-            new FigureInfo().setPosition(board.field[c0.getX()][c0.getY()], c1);
-            board.field[c1.getX()][c1.getY()] = board.field[c0.getX()][c0.getY()];
+            scoreBeforeC0 = computeScoreInCell(c0);
+            scoreBeforeC1 = computeScoreInCell(c1);
+
+//        Piece f = this.getFigure(c0);
+
+            //если произошло превращение пешки
+            if (newFigure != null) {
+                board.field[c1.getX()][c1.getY()] = newFigure;
+            } else {
+                new FigureInfo().setPosition(board.field[c0.getX()][c0.getY()], c1);
+                board.field[c1.getX()][c1.getY()] = board.field[c0.getX()][c0.getY()];
+            }
+            board.field[c0.getX()][c0.getY()] = null;
+            //переставили фигуры, посчитали, что теперь в с1, это прибавим
+
+            scoreAfterC1 = computeScoreInCell(c1);
+            score = score - scoreBeforeC0 - scoreBeforeC1 + scoreAfterC1;
         }
-        board.field[c0.getX()][c0.getY()] = null;
-        //переставили фигуры, посчитали, что теперь в с1, это прибавим
+    }
 
-        scoreAfterC1 = computeScoreInCell(c1);
-        score = score - scoreBeforeC0 - scoreBeforeC1 + scoreAfterC1;
+    void updateCastling(Cell c0, Cell c1) {
+        updateBoard(c0, c1, null);
+        //если происходит восстановление после рокировки
+        if ((c0.getX() == longKingX) || (c0.getX() == shortKingX)) {
+            try {
+                if (c0.getX() == longKingX) {
+                    updateBoard(new Cell(longRookX1, c0.getY()), new Cell(longRookX, c0.getY()), null);
+//                    board.field[longRookX][c0.getY()] = board.field[longRookX1][c0.getY()];
+//                    board.field[longRookX1][c0.getY()] = null;
+//                    new FigureInfo().setPosition(getFigure
+//                            (new Cell(longRookX, c0.getY())), new Cell(longRookX, c0.getY()));
+                } else {
+                    updateBoard(new Cell(shortRookX1, c0.getY()), new Cell(shortRookX, c0.getY()), null);
+//                    board.field[shortRookX][c0.getY()] = board.field[shortRookX1][c0.getY()];
+//                    board.field[shortRookX1][c0.getY()] = null;
+//                    new FigureInfo().setPosition(getFigure
+//                            (new Cell(shortRookX, c0.getY())), new Cell(shortRookX, c0.getY()));
+                }
+//                        updateBoard(new Cell(shortRookX1, c0.getY()),
+//                                new Cell(shortRookX, c0.getY()), null);
+            } catch (Exception e) {
+                Log.d("Exception", "Castling backward");
+                e.printStackTrace();
+            }
+        }
+        //если происходит сама рокировка
+        else {
+            try {
+                if (c1.getX() == longKingX) {
 
-        //если это король и он "скакнул" далеко, добавляем движение ладьи, то есть осуществляем рокировку
-        if ((figure instanceof King) && (Math.abs(c0.getX() - c1.getX()) > 1)) {
-            if (c1.getX() == longKingX)
-                //0
-                updateBoard(new Cell(longRookX, c0.getY()), new Cell(longRookX1, c0.getY()), null);
-            else
+                    updateBoard(new Cell(longRookX, c0.getY()),
+                            new Cell(longRookX1, c0.getY()), null);
 
-                updateBoard(new Cell(shortRookX, c0.getY()), new Cell(shortRookX1, c0.getY()), null);
+//                    board.field[longRookX1][c0.getY()] = board.field[longRookX][c0.getY()];
+//                    board.field[longRookX][c0.getY()] = null;
+//                    new FigureInfo().setPosition(getFigure
+//                            (new Cell(longRookX1, c0.getY())), new Cell(longRookX1, c0.getY()));
+                }
+//
+                else {
+                    updateBoard(new Cell(shortRookX, c0.getY()),
+                            new Cell(shortRookX1, c0.getY()), null);
+
+//                    board.field[shortRookX1][c0.getY()] = board.field[shortRookX][c0.getY()];
+//                    board.field[shortRookX][c0.getY()] = null;
+//                    new FigureInfo().setPosition(getFigure
+//                            (new Cell(shortRookX1, c0.getY())), new Cell(shortRookX1, c0.getY()));
+                }
+
+            } catch (Exception e) {
+                Log.d("Exception forward", "");
+                e.printStackTrace();
+            }
+
+
         }
     }
 
     void updateMoves(Cell c) {
-        if ((new FigureInfo().getName(getFigure(c)) == Figures.KING) && !(((King) getFigure(c)).isMoved()))
-            ((King) getFigure(c)).setMoved(true);
-        if ((new FigureInfo().getName(getFigure(c)) == Figures.ROOK) && !(((Rook) getFigure(c)).isMoved()))
-            ((Rook) getFigure(c)).setMoved(true);
+        try {
+            if ((new FigureInfo().getName(getFigure(c)) == Figures.KING) && !(((King) getFigure(c)).isMoved()))
+                ((King) getFigure(c)).setMoved(true);
+            if ((new FigureInfo().getName(getFigure(c)) == Figures.ROOK) && !(((Rook) getFigure(c)).isMoved()))
+                ((Rook) getFigure(c)).setMoved(true);
+        } catch (Exception e) {
+            Log.d("Exception", "updateMoves() called with: " + e.getStackTrace().toString());
+        }
     }
 
     /**
@@ -356,6 +412,7 @@ public class BoardDirector {
     void cleanGame() {
         repository.deleteGameByDate(date);
     }
+
     void restoreFigure(Piece figure, Cell c) {
         board.field[c.getX()][c.getY()] = figure;
         score = score + computeScoreInCell(c);
