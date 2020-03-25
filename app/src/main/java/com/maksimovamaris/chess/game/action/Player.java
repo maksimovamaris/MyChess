@@ -4,29 +4,18 @@ package com.maksimovamaris.chess.game.action;
 import com.maksimovamaris.chess.game.pieces.Colors;
 
 public class Player {
-    private Colors color;
-    private boolean isBot;
-    private boolean canMove = false;
+    Colors color;
+    private boolean playerCanMove = false;
 
-    public Player(Colors color, boolean isBot) {
+    public Player(Colors color) {
         this.color = color;
-        this.isBot = isBot;
-    }
-
-    public boolean isBot() {
-        return isBot;
     }
 
     public Colors getColor() {
         return color;
     }
 
-
-    public void setBot(boolean bot) {
-        isBot = bot;
-    }
-
     public void setFlag_move(boolean flag_move) {
-        this.canMove = flag_move;
+        this.playerCanMove = flag_move;
     }
 }

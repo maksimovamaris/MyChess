@@ -1,6 +1,7 @@
 package com.maksimovamaris.chess.view.games;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
+import com.maksimovamaris.chess.game.action.BotPlayer;
 import com.maksimovamaris.chess.game.pieces.*;
 
 import android.content.Context;
@@ -193,7 +194,7 @@ public class BoardView extends View {
         }
 
 
-        if (game.getCurrentPlayer().isBot())
+        if (game.getCurrentPlayer() instanceof BotPlayer)
             game.moveBot();
     }
 

@@ -207,7 +207,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         bundle.putString(getResources().getString(R.string.game_result), result);
         gameEndDialog.setArguments(bundle);
         gameEndDialog.setRetainInstance(true);
-        if (savedResult == null)
+        if ((savedResult == null) && (getSupportFragmentManager().findFragmentByTag(getResources().getString(R.string.dialog_show)) == null))
             gameEndDialog.show(manager, getResources().getString(R.string.dialog_show));
         this.savedResult = result;
 
@@ -219,6 +219,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     @Override
     public void lock() {
         lockView.setVisibility(View.VISIBLE);
+
     }
 
     @Override
@@ -228,6 +229,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
 
     @Override
     public void onChoiceStarted(Cell selected, Cell moved) {
+
         this.selected = selected;
         this.moved = moved;
         spaceView.setVisibility(View.VISIBLE);
@@ -247,7 +249,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     @Override
     public void modifyNotation(boolean notation) {
         //если нотация не нужна, удаляем игру
-        if(!notation)
+        if (!notation)
             game.clean();
         else
             game.setNotation(notation);

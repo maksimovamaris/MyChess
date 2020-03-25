@@ -316,7 +316,6 @@ public class BoardDirector {
 
                     updateBoard(new Cell(longRookX, c0.getY()),
                             new Cell(longRookX1, c0.getY()), null);
-
 //                    board.field[longRookX1][c0.getY()] = board.field[longRookX][c0.getY()];
 //                    board.field[longRookX][c0.getY()] = null;
 //                    new FigureInfo().setPosition(getFigure
@@ -350,6 +349,7 @@ public class BoardDirector {
                 ((Rook) getFigure(c)).setMoved(true);
         } catch (Exception e) {
             Log.d("Exception", "updateMoves() called with: " + e.getStackTrace().toString());
+            e.printStackTrace();
         }
     }
 
