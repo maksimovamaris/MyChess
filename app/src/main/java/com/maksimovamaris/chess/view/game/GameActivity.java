@@ -1,5 +1,6 @@
-package com.maksimovamaris.chess.view.games;
+package com.maksimovamaris.chess.view.game;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,7 +26,6 @@ import com.maksimovamaris.chess.game.action.GameLocker;
 import com.maksimovamaris.chess.game.action.GameNotationListener;
 import com.maksimovamaris.chess.game.pieces.Colors;
 
-
 import java.util.Date;
 
 public class GameActivity extends AppCompatActivity implements FigureChoiceListener, GameEndListener, GameLocker, GameNotationListener {
@@ -44,6 +44,7 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     private String savedResult;
     private Cell selected;
     private Cell moved;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,14 +55,16 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         boardView = findViewById(R.id.board_view);
         playerWhite = findViewById(R.id.player_white);
         playerBlack = findViewById(R.id.player_black);
+        preferences = getSharedPreferences(getResources().
+                getString(R.string.key_preferences), Context.MODE_PRIVATE);
         //получаем игру
         game = ((GameHolder) (getApplication())).getGame();
         gameDate = null;
-
     }
 
     @Override
-    public void onStart() {
+    public void onStart()
+    {
         super.onStart();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String theme = preferences.getString(
@@ -80,7 +83,6 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
                 break;
         }
     }
-
 
     @Override
     protected void onSaveInstanceState(Bundle state) {
@@ -149,9 +151,12 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         game.setGameEndListener(this);
         game.setLocker(this);
         game.setFigureChoiceListener(this);
-        game.initGame(getBaseContext());
+        game.initGame(getBaseContext(),preferences.getString(getResources().getString(R.string.pref_key_botlevel),
+                getResources().getStringArray(R.array.bot_levels)[0]));
         if (gameDate == null)
-            game.createGame(gameName, humanPlayer, botPlayer);
+            game.createGame(gameName, humanPlayer, botPlayer
+                    );
+
         else
             game.restoreGame(gameDate);
         //после того, как игра приобрела нужное состояние,
@@ -219,7 +224,6 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
     @Override
     public void lock() {
         lockView.setVisibility(View.VISIBLE);
-
     }
 
     @Override
@@ -256,4 +260,5 @@ public class GameActivity extends AppCompatActivity implements FigureChoiceListe
         //детачимся от вью только когда мы точно вышли из игры
         game.detachView();
     }
+
 }

@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.view.games;
+package com.maksimovamaris.chess.view.game;
 
 import android.app.Dialog;
 

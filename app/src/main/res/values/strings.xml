@@ -21,10 +21,17 @@
         <item>Cool</item>
         <item>Mint</item>
     </string-array>
+
     <string-array name="menu_items">
         <item>Games</item>
         <item>Game records</item>
         <item>Settings</item>
+    </string-array>
+
+    <string-array name="bot_levels">
+        <item>Completely random</item>
+        <item>Fast and stupid</item>
+        <item>Thoughtful</item>
     </string-array>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -73,6 +80,21 @@
     <string name="key_save_movedX">MOVEDX</string>
     <string name="key_save_movedY">MOVEDY</string>
     <string name="key_saved_newFigure">NEWFIGURE</string>
+    <string name="menu_players">Players</string>
+    <string name="edit_player_name_hint">Modify name</string>
+    <string name="level">Your level</string>
+    <string name="ok">OK</string>
+    <string name="fragment_players">PLAYERS</string>
+    <string name="fragment_records">RECORDS</string>
+    <string name="fragment_games">GAMES</string>
+    <string name="your_name_is">Your name is</string>
+    <string name="prefs_player_name">NEW_PLAYER_NAME</string>
+    <string name="key_preferences">PLAYERS</string>
+    <string name="key_visited">hasVisited</string>
+    <string name="error_player">Player name</string>
+    <string name="error_empty">is empty</string>
+    <string name="pref_key_botlevel">BOTLEVEL</string>
+    <string name="level_random">RANDOM</string>
 
 
 </resources>

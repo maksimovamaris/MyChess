@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.view.games;
+package com.maksimovamaris.chess.view.game;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -18,7 +18,6 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.maksimovamaris.chess.OnBackPressedListener;
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.DateConverter;
 import com.maksimovamaris.chess.data.GameData;
@@ -44,6 +43,7 @@ public class GameListFragment extends Fragment  {
     private TextView noGames;
     private RestoreGameView restoreGameView;
 
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -55,21 +55,6 @@ public class GameListFragment extends Fragment  {
         }
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        //получаем раннер
-        runner = ((GameHolder) (getContext().getApplicationContext())).getRunner();
-        runner.runInBackground(() -> {
-            //получаем репозиторий
-            repository = ((RepositoryHolder) (getContext().getApplicationContext())).getRepository();
-            gameData = repository.getGameOrRecord(false);
-            runner.runOnMain(() -> {
-                //в основном потоке прикрепляем адаптер со считанным из базы списком партий
-                updateView(gameData);
-            });
-        });
-    }
 
     @Nullable
     @Override
@@ -101,6 +86,21 @@ public class GameListFragment extends Fragment  {
                 deleteDialog.show(manager, getResources().getString(R.string.delete_dialog_show));
             }
         }));
+
+
+        runner = ((GameHolder) (getContext().getApplicationContext())).getRunner();
+        runner.runInBackground(() -> {
+            //получаем репозиторий
+            repository = ((RepositoryHolder) (getContext().getApplicationContext())).getRepository();
+            gameData = repository.getGameOrRecord(false);
+            runner.runOnMain(() -> {
+                //в основном потоке прикрепляем адаптер со считанным из базы списком партий
+                updateView(gameData);
+            });
+        });
+
+
+
         return root;
     }
 
@@ -135,4 +135,6 @@ public class GameListFragment extends Fragment  {
 
         void onLongClick(View view, int position);
     }
+
+
 }

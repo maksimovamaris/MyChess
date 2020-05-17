@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.view.games;
+package com.maksimovamaris.chess.view.game;
 
 import com.maksimovamaris.chess.game.action.BoardDirector;
 import com.maksimovamaris.chess.game.action.BotPlayer;

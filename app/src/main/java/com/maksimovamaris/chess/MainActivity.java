@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -22,15 +21,16 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import com.maksimovamaris.chess.preferences.PreferencesActivity;
 import com.maksimovamaris.chess.presenter.AddGameView;
 import com.maksimovamaris.chess.presenter.RestoreGameView;
-import com.maksimovamaris.chess.view.games.GameActivity;
-import com.maksimovamaris.chess.view.games.GameStartDialog;
-import com.maksimovamaris.chess.view.records.RecordsListFragment;
+import com.maksimovamaris.chess.view.game.GameActivity;
+import com.maksimovamaris.chess.view.game.GameStartDialog;
+
 
 import java.util.Date;
 
@@ -42,31 +42,22 @@ public class MainActivity extends AppCompatActivity implements AddGameView, Rest
 
 
     @Override
-    public void onBackPressed() {
-        FragmentManager fm = getSupportFragmentManager();
-        OnBackPressedListener backPressedListener = null;
-        for (Fragment fragment : fm.getFragments()) {
-            if (fragment instanceof RecordsListFragment) {
-                Log.d("Hello", "onBackPressed() called");
-//                backPressedListener = (OnBackPressedListener) fragment;
-                break;
-            }
-        }
-
-        if (backPressedListener != null) {
-            backPressedListener.onBackPressed();
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         fragmentManager = getSupportFragmentManager();
+
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        if (getSupportActionBar() != null) {
+            Log.d("supportActionBar", "onCreate() called with: savedInstanceState = [" + savedInstanceState + "]");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        }
+
+
         addGameBut = findViewById(R.id.fab);
         addGameBut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,10 +78,14 @@ public class MainActivity extends AppCompatActivity implements AddGameView, Rest
 
         AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) findViewById(R.id.collapsing_toolbar_layout)
                 .getLayoutParams();
-        params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
 
+        params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL + AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
+        CollapsingToolbarLayout.LayoutParams collapseParams = (CollapsingToolbarLayout.LayoutParams) findViewById(R.id.image)
+                .getLayoutParams();
+        collapseParams.setCollapseMode(CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN);
 
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -98,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements AddGameView, Rest
         inflater.inflate(R.menu.chess_menu, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -136,8 +132,13 @@ public class MainActivity extends AppCompatActivity implements AddGameView, Rest
     }
 
     @Override
-    public void onError(String name) {
-        Toast.makeText(this, name + " > 10 signs", Toast.LENGTH_SHORT).show();
+    public void onError(String name,String message) {
+        Toast.makeText(this, name + message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onComplete(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override

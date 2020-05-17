@@ -27,7 +27,7 @@ public class ChessApplication extends Application implements GameHolder, Reposit
         super.onCreate();
         runner = new TaskRunner();
         game = new Game(runner);
-        presenter=new GamePresenter();
+        presenter=new GamePresenter(getBaseContext());
         gamesDataBase = Room.databaseBuilder(this, GamesDataBase.class, "games_db")
                 .build();
         repository = new GamesRepositoryImpl(gamesDataBase);

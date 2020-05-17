@@ -1,5 +1,9 @@
 package com.maksimovamaris.chess.game.action;
 
+import android.content.Context;
+
+
+import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.game.pieces.Colors;
 import com.maksimovamaris.chess.game.pieces.FigureInfo;
 import com.maksimovamaris.chess.game.pieces.Piece;
@@ -9,20 +13,29 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class BotPlayer extends Player {
+public class BotPlayer extends HumanPlayer {
     private Game game;
     private Boolean isMate;
     private Boolean isDraw;
     private HashMap<Double, List<Cell>> weightedMoves;
+    private String level;
 
-    public BotPlayer(Colors color, Game game) {
+    public BotPlayer(Colors color, Game game, Context context) {
 
-        super(color);
+        super(color, context);
         this.game = game;
         isMate = null;
         isDraw = null;
         weightedMoves = new HashMap<>();
 
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
     }
 
     /**
@@ -88,6 +101,13 @@ public class BotPlayer extends Player {
             if (longCastling.size() != 0)
                 moves.add(longCastling);
 
+            if (level.equals(context.getResources().getStringArray(R.array.bot_levels)[0])) {
+                int num = 0;
+                num = (int) (Math.floor(Math.random() * moves.size()));
+                weightedMoves.put(num * 1.0, moves.get(num));
+                return num * 1.0;
+            }
+
             List<Double> opponentScore = new ArrayList<>();
             for (List<Cell> l : moves) {
                 Piece savedFigure = game.getBoardDirector().getFigure(l.get(1));
@@ -99,8 +119,8 @@ public class BotPlayer extends Player {
                         game.changePlayer();
 //                        if ((game.getBoardDirector().getFigure(l.get(1)) instanceof King) && (Math.abs(l.get(1).getX() - l.get(0).getX()) > 1)) {
 //                        } else {
-                            game.updateGame(l.get(1), l.get(0), null);
-                            game.getBoardDirector().restoreFigure(savedFigure, l.get(1));
+                        game.updateGame(l.get(1), l.get(0), null);
+                        game.getBoardDirector().restoreFigure(savedFigure, l.get(1));
 //                        }
                         double mateScore = 900;
                         weightedMoves.put(mateScore, l);
@@ -115,6 +135,11 @@ public class BotPlayer extends Player {
                     weightedMoves.put(drawScore, l);
                     return drawScore;
                 }
+
+
+
+                if(level.equals(context.getResources().getStringArray(R.array.bot_levels)[2]))
+                {
 //                //если мы не считали xод за противника
                 if (virtualOpponent) {
 //                    //посчитаем ход за противника
@@ -127,7 +152,9 @@ public class BotPlayer extends Player {
                 {
                     opponentScore.add(game.getBoardDirector().score);
                 }
-//            }
+            }
+                else
+                    weightedMoves.put(game.getBoardDirector().score,l);
 //            //после каждого просчитанного вперед хода откатываемся обратно
 
                 game.updateGame(l.get(1), l.get(0), null);
@@ -135,8 +162,10 @@ public class BotPlayer extends Player {
                 game.getBoardDirector().restoreFigure(savedFigure, l.get(1));
                 isDraw = isMate = null;
             }
+
+
 //        //если считаем за противника
-            if (!virtualOpponent) {
+            if ((level.equals(context.getResources().getStringArray(R.array.bot_levels)[2]))&&!virtualOpponent) {
                 if (game.getCurrentPlayer().getColor() == Colors.WHITE)
                     return Collections.max(opponentScore);
                 else
@@ -148,15 +177,24 @@ public class BotPlayer extends Player {
                     return (Collections.min(weightedMoves.keySet()));
 
             }
+//            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        catch (Exception e)
-        {e.printStackTrace();}
-return 0.0;
+        return 0.0;
+
     }
 
     List<Cell> getBestMove() {
         weightedMoves.clear();
 
+
+//        if (level.equals(context.getResources().getStringArray(R.array.bot_levels)[0])) {
+//
+//        }
         return weightedMoves.get(selectBestMove(true));
     }
+
+void clear()
+{weightedMoves.clear();}
 }

@@ -15,7 +15,7 @@ public interface GamesRepository {
     LiveData<List<GameData>> loadFromDatabase();
 
     @WorkerThread
-    GameData addGame(Date date, String name, String payer1, String player2);
+    GameData addGame(Date date, String name, String player1, String player2);
 
     MoveData addMove(String figureName, Cell c0, String capture, Cell c1, String savedFigureName, String threat, Date gameDate);
 

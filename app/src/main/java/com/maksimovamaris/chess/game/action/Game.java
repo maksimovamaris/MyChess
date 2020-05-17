@@ -13,12 +13,10 @@ import com.maksimovamaris.chess.game.pieces.Pawn;
 import com.maksimovamaris.chess.game.pieces.Rook;
 import com.maksimovamaris.chess.utils.Runner;
 import com.maksimovamaris.chess.game.pieces.Colors;
-import com.maksimovamaris.chess.view.games.BoardView;
+import com.maksimovamaris.chess.view.game.BoardView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -34,9 +32,9 @@ import java.util.concurrent.TimeUnit;
  * @see com.maksimovamaris.chess.ChessApplication
  */
 public class Game {
-    private Player mPlayer1;
-    private Player mPlayer2;
-    private Player currentPlayer;
+    private HumanPlayer mPlayer1;
+    private HumanPlayer mPlayer2;
+    private HumanPlayer currentPlayer;
     private BoardDirector boardDirector;
     private BoardView boardView;
     private Runner runner;
@@ -55,24 +53,27 @@ public class Game {
     int shortRookX;
     int longKingX;
     int longRookX;
-
+    private Context context;
 
     public Game(Runner runner) {
         this.runner = runner;
     }
 
-    private void createPlayers(String botPlayer) {
+    private void createPlayers(String botPlayer, String botLevel) {
+        Log.d("level calledm", " " + botLevel);
         //определяем, какой из игрококов - бот
         if (botPlayer.equals(Colors.WHITE.toString())) {
-            mPlayer1 = new BotPlayer(Colors.WHITE, this);
-            mPlayer2 = new Player(Colors.BLACK);
+            mPlayer1 = new BotPlayer(Colors.WHITE, this, context);
+            ((BotPlayer) mPlayer1).setLevel(botLevel);
+            mPlayer2 = new HumanPlayer(Colors.BLACK, context);
         } else {
             if (botPlayer.equals(Colors.BLACK.toString())) {
-                mPlayer2 = new BotPlayer(Colors.BLACK, this);
-                mPlayer1 = new Player(Colors.WHITE);
+                mPlayer2 = new BotPlayer(Colors.BLACK, this, context);
+                ((BotPlayer) mPlayer2).setLevel(botLevel);
+                mPlayer1 = new HumanPlayer(Colors.WHITE, context);
             } else {
-                mPlayer1 = new Player(Colors.WHITE);
-                mPlayer2 = new Player(Colors.BLACK);
+                mPlayer1 = new HumanPlayer(Colors.WHITE, context);
+                mPlayer2 = new HumanPlayer(Colors.BLACK, context);
             }
         }
         mPlayer1.setFlag_move(true);
@@ -86,8 +87,8 @@ public class Game {
      *
      * @param context контекст для runner'а
      */
-    public void initGame(Context context) {
-
+    public void initGame(Context context, String botLevel) {
+        this.context = context;
         shortKingX = 6;
         shortRookX = 7;
         longKingX = 2;
@@ -98,6 +99,7 @@ public class Game {
         hints = new ArrayList<>();
         boardDirector = new BoardDirector(context);
         boardDirector.startGame();
+        boardDirector.setBotLevel(botLevel);
         setNotation(false);
     }
 
@@ -116,7 +118,10 @@ public class Game {
                 boardDirector.setHumanPlayer(humanPlayer);
                 boardDirector.setGameName(gameName);
                 //сделали запись в базе данных
+
                 boardDirector.firstWrite();
+
+
                 setCastling();
             } catch (Exception e) {
                 Log.d("Exception", "createGame() called with: gameName = [" + gameName + "], humanPlayer = [" + humanPlayer + "], botPlayer = [" + botPlayer + "]");
@@ -125,7 +130,7 @@ public class Game {
         });
 
         runner.runOnMain(() -> {
-            createPlayers(botPlayer);
+            createPlayers(botPlayer, boardDirector.botLevel);
             notifyView(null, true, boardDirector);
         });
 
@@ -156,12 +161,15 @@ public class Game {
                 int num_moves = boardDirector.restoreGame(date);
                 setCastling();
                 //тянем из директора информацию о боте
-                createPlayers(boardDirector.botPlayer);
+                createPlayers(boardDirector.botPlayer, boardDirector.botLevel);
                 //определяем игрока по цвету последней ходившей фигуры
                 //если количество ходов нечетно, ходят черные
                 //то есть меняем игрока
                 if (num_moves % 2 == 1)
                     changePlayer();
+                //если продолжаем игру с хода бота
+                if (currentPlayer instanceof BotPlayer) {
+                }
                 //если король в опасности, оповещаем об этом шахом
                 if (!kingProtected(getKingPos())) {
                     isMate = checkMate(attack);
@@ -221,7 +229,7 @@ public class Game {
         return notation;
     }
 
-    public Player getCurrentPlayer() {
+    public HumanPlayer getCurrentPlayer() {
         return currentPlayer;
     }
 
@@ -346,17 +354,17 @@ public class Game {
                 //если первый ход, то получаем ходы для бота через checkDraw()
                 //достаем лучший ход по ключу - оптимальным очкам
                 //создаем копию на "лучший" ход, коллекции очищаем
+
                 List<Cell> bestMove = ((BotPlayer) getCurrentPlayer()).getBestMove();
                 runner.runOnMain(() -> {
                     locker.unlock();
                     processMove(bestMove.get(0), bestMove.get(1), null);
+
                 });
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
-
-
     }
 
 
@@ -638,6 +646,9 @@ public class Game {
                         threat = " =";
                         runner.runOnMain(() -> {
                             notifyView(null, false, boardDirector);
+
+//                            ((BotPlayer)  getCurrentPlayer()).clear();
+
                             changePlayer();
                             gameEndListener.endGame("Draw");
                         });
@@ -687,7 +698,7 @@ public class Game {
      */
     void restoreTestGame(BoardDirector director, String turn) {
 //бот не участвует в тестировании, его строка пустая
-        createPlayers("");
+        createPlayers("", "");
         if (turn == "white")
             currentPlayer = mPlayer1;
         else

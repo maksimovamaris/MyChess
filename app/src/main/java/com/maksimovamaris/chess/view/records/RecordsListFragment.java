@@ -17,7 +17,6 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.maksimovamaris.chess.OnBackPressedListener;
 import com.maksimovamaris.chess.R;
 import com.maksimovamaris.chess.data.DateConverter;
 import com.maksimovamaris.chess.data.GameData;
@@ -28,13 +27,13 @@ import com.maksimovamaris.chess.utils.Runner;
 import com.maksimovamaris.chess.view.DeleteDialogFragment;
 import com.maksimovamaris.chess.view.GameListAdapter;
 import com.maksimovamaris.chess.view.RecyclerTouchListener;
-import com.maksimovamaris.chess.view.games.GameListFragment;
+import com.maksimovamaris.chess.view.game.GameListFragment;
 import com.maksimovamaris.chess.view.notation.GameNotationActivity;
 
 
 import java.util.List;
 
-public class RecordsListFragment extends Fragment implements OnBackPressedListener {
+public class RecordsListFragment extends Fragment{
     private GamesRepositoryImpl repository;
     private LiveData<List<GameData>> gameData;
     private View root;
@@ -42,13 +41,6 @@ public class RecordsListFragment extends Fragment implements OnBackPressedListen
     private Runner runner;
     private GameListAdapter adapter;
     private TextView noRecords;
-
-
-    @Override
-    public void onBackPressed() {
-        getActivity().onBackPressed();
-        getChildFragmentManager().popBackStack();
-    }
 
 
     @Override

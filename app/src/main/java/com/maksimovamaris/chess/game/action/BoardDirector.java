@@ -33,6 +33,7 @@ public class BoardDirector {
     private boolean whiteFront;
     private static String TAG = "In TestGameBehavour";
     String botPlayer;
+    String botLevel;
     String gameName;
     String humanPlayer;
     double score;
@@ -81,6 +82,14 @@ public class BoardDirector {
 
     public void setHumanPlayer(String humanPlayer) {
         this.humanPlayer = humanPlayer;
+    }
+
+//    public String getBotLevel() {
+//        return botLevel;
+//    }
+
+    public void setBotLevel(String botLevel) {
+        this.botLevel = botLevel;
     }
 
     public Date getDate() {
@@ -194,14 +203,11 @@ public class BoardDirector {
         this.setGameName(gameData.getName());
         this.humanPlayer = gameData.getHuman_player();
         this.botPlayer = gameData.getBot_player();
-
         if (botPlayer.equals(Colors.WHITE.toString())) {
             whiteFront = false;
-
             rotateBoard();
 
         }
-
         //начинаем с чистой доски с начальными позициями фигур
         //(она у нас уже есть)
         //ставим ту же дату, что была в восстановленной игре
@@ -368,7 +374,7 @@ public class BoardDirector {
      *
      * @param b доска с нужной позицией
      */
-    public void setBoard(Board b, Cell whiteKingPos, Cell blackKingPos) {
+    public void setBoard(Board b) {
         board.field = b.field;
     }
 
@@ -378,7 +384,6 @@ public class BoardDirector {
     void firstWrite() {
         try {
             repository.addGame(date, gameName, humanPlayer, botPlayer);
-
         } catch (NullPointerException e) {//для тестов
             Log.d(TAG, "firstWrite() called");
         }

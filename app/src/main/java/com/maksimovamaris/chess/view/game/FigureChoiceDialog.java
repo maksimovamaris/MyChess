@@ -1,4 +1,4 @@
-package com.maksimovamaris.chess.view.games;
+package com.maksimovamaris.chess.view.game;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -13,7 +13,6 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,9 +43,7 @@ public class FigureChoiceDialog extends DialogFragment {
     public void onStart() {
         super.onStart();
         newFigure = "QUEEN";
-
     }
-
 
     @Nullable
     @Override
@@ -62,8 +59,6 @@ public class FigureChoiceDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-
-
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Select figure");
 
@@ -90,20 +85,10 @@ public class FigureChoiceDialog extends DialogFragment {
             public void onClick(DialogInterface dialog, int id) {
                 listener.onChoiceMade(newFigure);
                 dismiss();
-
             }
         });
-
         return builder.create();
     }
-
-
-//    @Override
-//    public void onSaveInstanceState(@NonNull Bundle outState) {
-//
-//        super.onSaveInstanceState(outState);
-//        outState.putString(getResources().getString(R.string.key_saved_newFigure),newFigure);
-//    }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {

@@ -7,7 +7,7 @@ import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.maksimovamaris.chess.view.games.GameListFragment;
+import com.maksimovamaris.chess.view.game.GameListFragment;
 
 public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener{
 

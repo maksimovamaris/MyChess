@@ -25,6 +25,17 @@ public class GameData {
     @ColumnInfo(name="bot_player")
     private String bot_player;
 
+//    @ColumnInfo(name="bot_level")
+//    private String bot_level;
+//
+//    public String getBot_level() {
+//        return bot_level;
+//    }
+//
+//    public void setBot_level(String bot_level) {
+//        this.bot_level = bot_level;
+//    }
+
     public String getName() {
         return name;
     }

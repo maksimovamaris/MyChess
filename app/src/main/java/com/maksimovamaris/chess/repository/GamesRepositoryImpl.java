@@ -27,14 +27,15 @@ public class GamesRepositoryImpl implements GamesRepository {
 
     @Override
     @WorkerThread
-    public GameData addGame(Date date, String gameName, String player1Name, String player2Name) {
+    public GameData addGame(Date date, String gameName, String player1, String player2Name) {
         GameData gameData = new GameData();
         gameData.setGame_date(date);
         gameData.setTurn("unknown");
         gameData.setNotation(false);
         gameData.setName(gameName);
-        gameData.setHuman_player(player1Name);
+        gameData.setHuman_player(player1);
         gameData.setBot_player(player2Name);
+//        gameData.setBot_level(botLevel);
         gamesDataBase.getGameDao().addGame(gameData);
         return gameData;
     }

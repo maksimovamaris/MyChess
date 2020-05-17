@@ -10,7 +10,7 @@ import com.maksimovamaris.chess.game.pieces.Pawn;
 import com.maksimovamaris.chess.game.pieces.Queen;
 import com.maksimovamaris.chess.game.pieces.Rook;
 import com.maksimovamaris.chess.utils.StubRunner;
-import com.maksimovamaris.chess.view.games.BoardView;
+import com.maksimovamaris.chess.view.game.BoardView;
 
 import org.junit.Before;
 import org.junit.Test;

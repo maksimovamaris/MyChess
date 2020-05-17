@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".preferences.PreferencesActivity" />
-        <activity android:name=".view.games.GameActivity"
+        <activity android:name=".view.game.GameActivity"
             android:screenOrientation="portrait"
             />
         <activity android:name=".view.notation.GameNotationActivity" />
