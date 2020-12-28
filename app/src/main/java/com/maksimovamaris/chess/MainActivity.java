@@ -27,6 +27,7 @@ import com.google.android.material.navigation.NavigationView;
 
 import com.maksimovamaris.chess.preferences.PreferencesActivity;
 import com.maksimovamaris.chess.presenter.AddGameView;
+import com.maksimovamaris.chess.presenter.BotView;
 import com.maksimovamaris.chess.presenter.RestoreGameView;
 import com.maksimovamaris.chess.view.game.GameActivity;
 import com.maksimovamaris.chess.view.game.GameStartDialog;
@@ -34,7 +35,7 @@ import com.maksimovamaris.chess.view.game.GameStartDialog;
 
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity implements AddGameView, RestoreGameView {
+public class MainActivity extends AppCompatActivity implements AddGameView, RestoreGameView, BotView {
     private AppBarConfiguration mAppBarConfiguration;
     private GameStartDialog gameStartDialog;
     private FloatingActionButton addGameBut;
@@ -149,5 +150,31 @@ public class MainActivity extends AppCompatActivity implements AddGameView, Rest
         intent.putExtra(getString(R.string.recycler_bot), bot);
         startActivity(intent);
     }
+
+    @Override
+    public void onLevelAdded(String level) {
+        Toast.makeText(getApplicationContext(), "Bot level changed!", Toast.LENGTH_SHORT).show();
+//        botImage.setBackgroundResource(presenter.imageForBotLevel(level));
+
+//        public int imageForBotLevel(String level) {
+//            if (getArrayIndex(level) == 0)
+//                return R.drawable.bot_random;
+//            else if (getArrayIndex(level) == 1)
+//                return R.drawable.bot_fast_and_stupid;
+//            else
+//                return R.drawable.bot_thoughtful;
+//        }
+
+
+//        String[] array = getResources().getStringArray(R.array.bot_levels);
+//        completely bot_random
+//        if (level.equals(array[0])) {
+//
+//        } else if (level.equals(array[1])) {
+//
+//        } else if (level.equals(array[2])) {
+    }
+
+
 }
 

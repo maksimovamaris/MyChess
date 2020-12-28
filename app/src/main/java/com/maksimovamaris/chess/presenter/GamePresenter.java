@@ -30,6 +30,7 @@ public class GamePresenter {
         editor.putString(context.getString(R.string.pref_key_botlevel), level);
         editor.apply();
         botView.onLevelAdded(level);
+//        botImage.setBackgroundResource(presenter.imageForBotLevel(level));
 
 //        addGameView.onComplete("Bot level changed!");
 //        botView.onLevelAdded;

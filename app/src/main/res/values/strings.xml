@@ -95,6 +95,7 @@
     <string name="error_empty">is empty</string>
     <string name="pref_key_botlevel">BOTLEVEL</string>
     <string name="level_random">RANDOM</string>
+    <string name="bot_sign">BOT</string>
 
 
 </resources>
